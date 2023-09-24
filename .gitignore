@@ -4,3 +4,4 @@
 /audio
 parsers/__pycache__
 .DS_Store
+.pylintrc
