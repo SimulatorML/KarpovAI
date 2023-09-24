@@ -2,7 +2,7 @@ import os
 import json
 from typing import List, Dict
 from pytube import YouTube
-from channel_parser import ChannelParser
+from parsers.channel_parser import ChannelParser
 
 
 def get_video_info(video_url: str, path_to_save: str) -> dict:
@@ -25,7 +25,7 @@ def get_video_info(video_url: str, path_to_save: str) -> dict:
         saved audio path
     """
     yt = YouTube(video_url)
-    audio_name = yt.video_id + ".mp4"
+    audio_name = yt.video_id + ".mp3"
     audio_path = os.path.join(path_to_save, audio_name)
     title = yt.title
     print(f"Downloading {title}...")
@@ -35,11 +35,7 @@ def get_video_info(video_url: str, path_to_save: str) -> dict:
     # Download mp4 audio file:
     yt.streams.filter(only_audio=True).first().download(path_to_save, audio_name)
     description = yt.description
-    return {
-        "title": title,
-        "description": description,
-        "audio_path": audio_path
-    }
+    return {"title": title, "description": description, "audio_path": audio_path}
 
 
 def get_video_urls(channel_url: str) -> List[str]:
@@ -48,11 +44,27 @@ def get_video_urls(channel_url: str) -> List[str]:
     return channel.video_urls
 
 
+def download_channel_audio_track(
+    url_of_video: str, path_to_save_audio: str, json_video_info_path: str = None
+) -> Dict[str, List[str]]:
+    video_info = {"title": [], "description": [], "audio_path": []}
+    url_info = get_video_info(url_of_video, path_to_save_audio)
+    print(f"Path to mp3 file: {url_info['audio_path']}\n")
+
+    for key, value in url_info.items():
+        video_info[key].append(value)
+
+    with open(json_video_info_path, "w", encoding="utf-8") as f:
+        json.dump([video_info], f)
+
+    return [video_info]
+
+
 def download_channel_audio_tracks(
-        channel_url: str,
-        path_to_save_audio: str,
-        json_video_info_path: str,
-        url_file_path: str=None
+    channel_url: str,
+    path_to_save_audio: str,
+    json_video_info_path: str,
+    url_file_path: str = None,
 ) -> Dict[str, List[str]]:
     """
     This function allows you to download both all audio tracks of a video
@@ -88,22 +100,14 @@ def download_channel_audio_tracks(
         with open(json_video_info_path, "r", encoding="utf-8") as f:
             video_info = json.load(f)
     else:
-        video_info = {
-            "title": [],
-            "description": [],
-            "audio_path": []
-        }
+        video_info = {"title": [], "description": [], "audio_path": []}
 
     # Dict for new crawling videos
-    crawling_videos = {
-        "title": [],
-        "description": [],
-        "audio_path": []
-    }
+    crawling_videos = {"title": [], "description": [], "audio_path": []}
 
     # Determine the set of downloaded videos
     downloaded_videos = set()
-    if not url_file_path is None and os.path.exists(url_file_path):
+    if url_file_path is not None and os.path.exists(url_file_path):
         with open(url_file_path, "r", encoding="utf-8") as f:
             for line in f:
                 downloaded_videos.add(line.strip())
@@ -112,7 +116,7 @@ def download_channel_audio_tracks(
     new_videos = set(get_video_urls(channel_url)) - downloaded_videos
 
     # If necessary, we add new videos to the file
-    if not url_file_path is None:
+    if url_file_path is not None:
         with open(url_file_path, "a", encoding="utf-8") as f:
             for video in new_videos:
                 f.write(video + "\n")
@@ -122,10 +126,11 @@ def download_channel_audio_tracks(
     for idx, url in enumerate(new_videos, 1):
         print(f"{idx} video.")
         url_info = get_video_info(url, path_to_save_audio)
-        print(f"Path to mp4 file: {url_info['audio_path']}\n")
+        print(f"Path to mp3 file: {url_info['audio_path']}\n")
         for key, value in url_info.items():
             video_info[key].append(value)
             crawling_videos[key].append(value)
+        break
 
     # Overwriting the json file with video info or writing a new one
     with open(json_video_info_path, "w", encoding="utf-8") as f:
@@ -133,10 +138,14 @@ def download_channel_audio_tracks(
 
     return crawling_videos
 
+
 if __name__ == "__main__":
-    _ = download_channel_audio_tracks(
-        "https://www.youtube.com/c/karpovcourses",
-        "audio",
-        "video_info.json",
-        "urls_of_channel_videos.txt"
+    _ = download_channel_audio_track(
+        "https://www.youtube.com/watch?v=OXtOhjeiTzw", "audio", "video_info.json"
     )
+#  _ = download_channel_audio_tracks(
+#      "https://www.youtube.com/c/karpovcourses",
+#      "audio",
+#      "video_info.json",
+#      "urls_of_channel_videos.txt",
+#  )

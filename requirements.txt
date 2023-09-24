@@ -16,3 +16,5 @@ tomlkit==0.12.1
 typing_extensions==4.8.0
 tzdata==2023.3
 wrapt==1.15.0
+python-dotenv==1.0.0
+openai==0.28.0
