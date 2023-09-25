@@ -1,6 +1,6 @@
 import os
 import json
-from typing import List, Dict
+from typing import List
 from pytube import YouTube
 from parsers.channel_parser import ChannelParser
 
@@ -47,6 +47,10 @@ def get_video_urls(channel_url: str) -> List[str]:
 def download_channel_audio_track(
     url_of_video: str, path_to_save_audio: str, json_video_info_path: str = None
 ) -> str:
+    """
+    Download audio track from YouTube-video and save info to json.
+    Return path to downloaded audio track
+    """
     if os.path.exists(json_video_info_path):
         with open(json_video_info_path, "r", encoding="utf-8") as f:
             video_info = json.load(f)
