@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 import openai
 from llama_index import Document
 from llama_index.node_parser import SimpleNodeParser
-from llama_index import VectorStoreIndex, get_response_synthesizer, ServiceContext
-from llama_index.retrievers import VectorIndexRetriever
-from llama_index.query_engine import RetrieverQueryEngine
-from llama_index.indices.postprocessor import SimilarityPostprocessor
+from llama_index import StorageContext, load_index_from_storage
+from llama_index import VectorStoreIndex, ServiceContext
 from parsers.parser_transcribe import ParserTranscribe, get_video_urls
 
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
 
 @dataclass()
 class IndexPipeline:
@@ -22,7 +22,9 @@ class IndexPipeline:
     path_to_save: str
     url_file_path: str
     json_video_info_path: str
-    storage_index_path: str
+    index_folder: str
+    chunk_size: int = 200
+    chunk_overlap: int = 50
 
     def _get_download_urls(self, channel_url) -> List[str]:
         """Определяет список видео для скачивания"""
@@ -63,7 +65,46 @@ class IndexPipeline:
         Или создает новый индекс, если self.storage_index_path не существует
         3. Сохраняет индекс
         """
-        pass
+
+        # Загружаем индекс
+        vector_store_path = os.path.join(self.index_folder, "vector_store.json")
+        if os.path.exists(vector_store_path):
+            storage_context = StorageContext.from_defaults(persist_dir=self.index_folder)
+            index = load_index_from_storage(storage_context)
+        else:
+            # Или создаем пустой
+            node_parser = SimpleNodeParser.from_defaults(
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap
+            )
+            service_context = ServiceContext.from_defaults(node_parser=node_parser)
+            index = VectorStoreIndex([], service_context=service_context)
+
+        # Выбираем документы для добавления в индекс
+        with open(self.json_video_info_path, "r", encoding="utf-8") as f:
+            data_json = json.load(f)
+        to_download_data = []
+        for i in new_videos:
+            for j in data_json:
+                if i == j["url"]:
+                    to_download_data.append(j)
+
+        # Формируем документы
+        documents = [
+            Document(
+                text=data["text"][0],
+                metadata={"url": data["url"][0], "title": data["title"][0]},
+            )
+            for data in to_download_data
+        ]
+
+        # Добавляем документы в индекс
+        for doc in documents:
+            index.insert(doc)
+
+        # Сохраняем индекс
+        index.storage_context.persist(self.index_folder)
+
 
     def run(self, channel_url):
         """Запускает пайплайн получения индекса"""
