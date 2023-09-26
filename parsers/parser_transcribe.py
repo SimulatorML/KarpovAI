@@ -218,10 +218,10 @@ class ParserTranscribe:
         audio_path = self._download_channel_audio_track(url_of_video)
         self._get_transcribe(audio_path)
 
-    def get_video_urls(self, channel_url: str) -> List[str]:
-        """Get list of all video urls from youtube-channel"""
-        channel = ChannelParser(channel_url)
-        return channel.video_urls
+def get_video_urls(channel_url: str) -> List[str]:
+    """Get list of all video urls from youtube-channel"""
+    channel = ChannelParser(channel_url)
+    return channel.video_urls
 
 if __name__ == "__main__":
     parser = ParserTranscribe(
