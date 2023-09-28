@@ -1,7 +1,6 @@
 .env
 /.history
 /venv
-/audio
-parsers/__pycache__
+data_pipelines/__pycache__
 .DS_Store
 .pylintrc
