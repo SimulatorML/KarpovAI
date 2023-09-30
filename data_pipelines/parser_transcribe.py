@@ -190,7 +190,8 @@ class ParserTranscribe:
                     if f.startswith(file_name[:-4] + "_segment")
                 ]
             )
-            for segment_file in segment_files:
+            for i, segment_file in enumerate(segment_files):
+                print(f"Transcribe {i} segment")
                 if segment_file.startswith(file_name[:-4] + "_segment"):
                     segment_path = os.path.join(self.path_to_save, segment_file)
                     transcriptions.append(self._transcribe_with_whisper(segment_path))

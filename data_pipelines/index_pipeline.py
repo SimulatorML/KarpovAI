@@ -52,7 +52,8 @@ class IndexPipeline:
         Текст и метаданные сохраняются в json-файл.
         """
         transcriber = ParserTranscribe(self.path_to_save, self.json_video_info_path)
-        for url in new_videos:
+        for i, url in enumerate(new_videos):
+            print(f"Transcribe {i} video")
             transcriber.get_transcribe_video(url)
 
     def _get_index(self, new_videos: List[str]) -> None:
@@ -99,7 +100,8 @@ class IndexPipeline:
         ]
 
         # Добавляем документы в индекс
-        for doc in documents:
+        for i, doc in enumerate(documents):
+            print(f"Add {i} video to index")
             index.insert(doc)
 
         # Сохраняем индекс
@@ -118,27 +120,62 @@ class IndexPipeline:
             print("No new videos to download")
 
 if __name__ == "__main__":
-    pipe = IndexPipeline(
-        "../data/audio",
-        "../data/urls_of_channel_videos.txt",
-        "../data/video_info.json",
-        "../data/index_storage"
-    )
-    pipe.run("https://www.youtube.com/c/karpovcourses", test=True)
+    # pipe = IndexPipeline(
+    #     "../data/audio",
+    #     "../data/urls_of_channel_videos.txt",
+    #     "../data/video_info.json",
+    #     "../data/index_storage"
+    # )
+    # pipe.run("https://www.youtube.com/c/karpovcourses")
     storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage")
     idx = load_index_from_storage(storage_cntxt)
+    print("Index is loaded")
     query_engine = idx.as_query_engine(
         include_text=True,
         response_mode="no_text",
         embedding_mode="hybrid",
-        similarity_top_k=3,
+        similarity_top_k=5,
     )
-    QUESTION = "Какие софт скиллы нужны для дата саентиста"
-    retrival = query_engine.query(
-        QUESTION,
-    )
-    print(f"Q: {QUESTION}")
-    information = [
-        (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
-    ]
-    print(information)
+
+    while True:
+        question = input()
+        if question == "exit":
+            break
+        retrival = query_engine.query(
+            question,
+        )
+        print(f"Q: {question}")
+        information = [
+            (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
+        ]
+        for i in information:
+            print(i[2], "\n", i[0])
+
+
+    # with open("../data/video_info.json", "r", encoding="utf-8") as file:
+    #     data_list = json.load(file)
+    # crawling_urls = []
+    # for itm in data_list:
+    #     if itm["text"]:
+    #         crawling_urls.append(itm["url"][0])
+    # print(f"Number of crawling urls: {len(crawling_urls)}")
+    #
+    # all_videos = set()
+    # with open("../data/urls_of_channel_videos.txt", "r", encoding="utf-8") as file:
+    #     for line in file:
+    #         all_videos.add(line.strip())
+    # print(f"Total number urls: {len(all_videos)}")
+    #
+    # not_crawling = list(all_videos - set(crawling_urls))
+    # print(f"Number of not crawling urls {len(not_crawling)}")
+    # pipe._transcribe_videos(not_crawling)
+    #
+    #
+    # with open("../data/video_info.json", "r", encoding="utf-8") as file:
+    #     data_list = json.load(file)
+    # transcribe_urls = []
+    # for itm in data_list:
+    #     if itm["text"]:
+    #         transcribe_urls.append(itm["url"][0])
+    # pipe._get_index(transcribe_urls)
+    # ./data/audio/9W1v-DkXriY
