@@ -120,36 +120,37 @@ class IndexPipeline:
             print("No new videos to download")
 
 if __name__ == "__main__":
-    # pipe = IndexPipeline(
-    #     "../data/audio",
-    #     "../data/urls_of_channel_videos.txt",
-    #     "../data/video_info.json",
-    #     "../data/index_storage"
-    # )
-    # pipe.run("https://www.youtube.com/c/karpovcourses")
-    storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage")
-    idx = load_index_from_storage(storage_cntxt)
-    print("Index is loaded")
-    query_engine = idx.as_query_engine(
-        include_text=True,
-        response_mode="no_text",
-        embedding_mode="hybrid",
-        similarity_top_k=5,
+    pipe = IndexPipeline(
+        "../data/audio",
+        "../data/urls_of_channel_videos.txt",
+        "../data/video_info.json",
+        "../data/index_storage_2048",
+        chunk_size=2048
     )
-
-    while True:
-        question = input()
-        if question == "exit":
-            break
-        retrival = query_engine.query(
-            question,
-        )
-        print(f"Q: {question}")
-        information = [
-            (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
-        ]
-        for i in information:
-            print(i[2], "\n", i[0])
+    # pipe.run("https://www.youtube.com/c/karpovcourses")
+    # storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage_1500")
+    # idx = load_index_from_storage(storage_cntxt)
+    # print("Index is loaded")
+    # query_engine = idx.as_query_engine(
+    #     include_text=True,
+    #     response_mode="no_text",
+    #     embedding_mode="hybrid",
+    #     similarity_top_k=5,
+    # )
+    #
+    # while True:
+    #     question = input()
+    #     if question == "exit":
+    #         break
+    #     retrival = query_engine.query(
+    #         question,
+    #     )
+    #     print(f"Q: {question}")
+    #     information = [
+    #         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
+    #     ]
+    #     for i in information:
+    #         print(i[2], "\n", i[0])
 
 
     # with open("../data/video_info.json", "r", encoding="utf-8") as file:
@@ -171,11 +172,11 @@ if __name__ == "__main__":
     # pipe._transcribe_videos(not_crawling)
     #
     #
-    # with open("../data/video_info.json", "r", encoding="utf-8") as file:
-    #     data_list = json.load(file)
-    # transcribe_urls = []
-    # for itm in data_list:
-    #     if itm["text"]:
-    #         transcribe_urls.append(itm["url"][0])
-    # pipe._get_index(transcribe_urls)
+    with open("../data/video_info.json", "r", encoding="utf-8") as file:
+        data_list = json.load(file)
+    transcribe_urls = []
+    for itm in data_list:
+        if itm["text"]:
+            transcribe_urls.append(itm["url"][0])
+    pipe._get_index(transcribe_urls)
     # ./data/audio/9W1v-DkXriY
