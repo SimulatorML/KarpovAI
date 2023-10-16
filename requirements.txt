@@ -60,3 +60,4 @@ urllib3==1.26.5
 wrapt==1.15.0
 yarl==1.9.2
 aiogram==2.11.2
+schedule==1.2.1
