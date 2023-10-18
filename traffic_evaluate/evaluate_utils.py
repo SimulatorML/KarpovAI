@@ -23,12 +23,13 @@
 """
 from typing import List
 # from typing import DataFrame # - not works at my machine...
-import pandas as pd # my substitute for typing DataFrame
-from llama_index.schema import BaseNode
 
 # parse json file with transcribed videos
 # and save a modified file
 import json
+
+import pandas as pd # my substitute for typing DataFrame
+from llama_index.schema import BaseNode
 
 # to pass the model object into the functions
 from llama_index.llms import OpenAI
@@ -57,7 +58,7 @@ def process_nodes(nodes: List[BaseNode]) -> List[BaseNode]:
     Returns:
     - list: A processed list of BaseNode objects.
     """
-    
+
     # Initialize an empty list to store the processed nodes
     result = []
 
@@ -152,7 +153,7 @@ def generate_video_questions(
     parser = SimpleNodeParser.from_defaults(chunk_size=chunk_size)
     nodes = parser.get_nodes_from_documents(docs)
 
-    # process the nodes to discard the last node of the video 
+    # process the nodes to discard the last node of the video
     # if it is very shortened during splitting
     nodes = process_nodes(nodes)
 
@@ -172,13 +173,13 @@ def generate_video_questions(
     """
 
     # query based on the nodes list
-    # num_questions_per_chunk will anyway not appear in the query, 
+    # num_questions_per_chunk will anyway not appear in the query,
     # can be any value :)
     qa_dataset = generate_question_context_pairs(
-        nodes=nodes, 
-        llm=llm, 
+        nodes=nodes,
+        llm=llm,
         qa_generate_prompt_tmpl=qa_generate_prompt_tmpl,
-        num_questions_per_chunk=1 
+        num_questions_per_chunk=1
         )
 
     # pairs node_id: video_url
@@ -186,16 +187,16 @@ def generate_video_questions(
 
     # pairs question_id: node_id
     question_id_node_id = {
-        question_id: qa_dataset.relevant_docs[question_id][0] 
+        question_id: qa_dataset.relevant_docs[question_id][0]
         for question_id in qa_dataset.relevant_docs
         }
-    
+
     # pairs question_id: video_url
     question_id_url = {
-        question_id: node_id_url[question_id_node_id[question_id]] 
+        question_id: node_id_url[question_id_node_id[question_id]]
         for question_id in question_id_node_id
         }
-    
+
     # invert the 'question_id_url'
     # pairs video_url: list[question_id]
     url_question_id = {}
@@ -205,29 +206,27 @@ def generate_video_questions(
             url_question_id[value].append(key)
         else:
             url_question_id[value] = [key]
-    
+
     # replace question_id by question_text
     # pairs video_url: list[question]
-
     url_question = {
         url: [
-            qa_dataset.queries[question_id] 
-              for question_id in url_question_id[url]
-              ] 
-              for url in url_question_id
-              }
-    
+            qa_dataset.queries[question_id]
+            for question_id in question_ids
+        ]
+        for url, question_ids in url_question_id.items()
+    }
+
     # extend the original json
     # by creating 'control_questions': list[question] pairs
     # for each video's dict
     for video_dict in video_json:
         video_dict['control_questions'] = url_question[video_dict['url'][0]]
-    
+
     # dump the final json to a new file
     with open(video_info_output_path, "w", encoding="utf-8") as f:
         json.dump(video_json, f, ensure_ascii=False, indent=4)
 
-        
 def get_questions_index(index_folder_path: str, video_info_path: str) -> None:
     """
     Заносит каждый вопрос к видео из video_info.json в поисковый индекс с помощью llama_index.
