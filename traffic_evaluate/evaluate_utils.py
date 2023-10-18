@@ -22,11 +22,13 @@
 - get_questions_dataset - функция получения датасета для исследования релевантных боту вопросов.
 """
 from typing import List
-# from typing import DataFrame # - not works at my machine...
+import os
 
 # parse json file with transcribed videos
 # and save a modified file
 import json
+from dotenv import load_dotenv
+import openai
 
 import pandas as pd # my substitute for typing DataFrame
 from llama_index.schema import BaseNode
@@ -42,6 +44,10 @@ from llama_index.node_parser import SimpleNodeParser
 
 # make node: question pairs
 from llama_index.evaluation import generate_question_context_pairs
+from llama_index import StorageContext, load_index_from_storage, VectorStoreIndex, ServiceContext
+
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
 
 
 def process_nodes(nodes: List[BaseNode]) -> List[BaseNode]:
@@ -168,7 +174,7 @@ def generate_video_questions(
     На основе приведенного текста составь только один вопрос, \
     на который можно ответить с помощью текста. \
     Вопрос должен покрыть как можно больше аспектов в тексте. \
-    Он должен быть только на основе привденного текста \
+    Он должен быть только на основе приведенного текста \
     и относиться к области анализа данных."
     """
 
@@ -227,7 +233,11 @@ def generate_video_questions(
     with open(video_info_output_path, "w", encoding="utf-8") as f:
         json.dump(video_json, f, ensure_ascii=False, indent=4)
 
-def get_questions_index(index_folder_path: str, video_info_path: str) -> None:
+def get_questions_index(
+        index_folder_path: str,
+        video_info_path: str,
+        chunk_size: int = 1024 * 3,
+        chunk_overlap: int = 50) -> None:
     """
     Заносит каждый вопрос к видео из video_info.json в поисковый индекс с помощью llama_index.
     В качестве метаданных также заносится ссылка и название видео.
@@ -236,11 +246,57 @@ def get_questions_index(index_folder_path: str, video_info_path: str) -> None:
     ----------
     index_folder_path
     video_info_path
+    chunk_size
+    chunk_overlap
 
     Returns
     -------
 
     """
+    # Загружаем индекс
+    vector_store_path = os.path.join(index_folder_path, "vector_store.json")
+    if os.path.exists(vector_store_path):
+        storage_context = StorageContext.from_defaults(persist_dir=index_folder_path)
+        index = load_index_from_storage(storage_context)
+    else:
+        # Или создаем пустой
+        node_parser = SimpleNodeParser.from_defaults(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+        service_context = ServiceContext.from_defaults(node_parser=node_parser)
+        index = VectorStoreIndex([], service_context=service_context)
+
+    # Загружаем словарь с информацией о каждом видео
+    with open(video_info_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
+    questions = []
+    for video_dict in data_json:
+        metadata = {
+            "url": video_dict["url"][0],
+            "title": video_dict["title"][0]
+        }
+        for question in video_dict["control_questions"]:
+            question_dict = metadata.copy()
+            question_dict["question"] = question
+            questions.append(question_dict)
+
+    # Формируем документы
+    documents = [
+        Document(
+            text=data["question"],
+            metadata={"url": data["url"], "title": data["title"]},
+        )
+        for data in questions
+    ]
+
+    # Добавляем документы в индекс
+    for doc in documents:
+        print(f"Add question {doc.text} to index")
+        index.insert(doc)
+
+    # Сохраняем индекс
+    index.storage_context.persist(index_folder_path)
 
 def filter_questions_from_chat(parsed_chat_path: str, filtered_questions_path: str) -> None:
     """
@@ -282,3 +338,6 @@ def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) 
         columns: 'chat_question', 'gen_question', 'similarity'
 
     """
+
+if __name__ == "__main__":
+    get_questions_index("questions_index_storage", "video_info_test.json")
