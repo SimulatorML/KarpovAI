@@ -1,6 +1,6 @@
 .env
 /.history
 /venv
-data_pipelines/__pycache__
+**/__pycache__/
 .DS_Store
 .pylintrc
