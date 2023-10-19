@@ -298,7 +298,9 @@ def get_questions_index(
     # Сохраняем индекс
     index.storage_context.persist(index_folder_path)
 
-def filter_questions_from_chat(parsed_chat_path: str, filtered_questions_path: str) -> None:
+def filter_questions_from_chat(parsed_chat_path: str,
+                               filtered_questions_path: str,
+                               llm_model: str) -> None:
     """
     Отбирает с помощью gpt-3.5-turbo сообщения из чата, в которых содержится вопрос
     Перед подачей в gpt-3.5-turbo обрабатывает тексты сообщений, в которых содержатся
@@ -308,13 +310,73 @@ def filter_questions_from_chat(parsed_chat_path: str, filtered_questions_path: s
     ----------
     parsed_chat_path: str
         path to json with parsed messages
-    filtered_questions_path
+    filtered_questions_path: str
         path to filtered messages containing the question
+    llm_model: str
+        name of llm-model
 
     Returns
     -------
 
     """
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
+
+    # Convert metadata from text (links, bold, etc) to text
+    for message in data_json:
+        if isinstance(message["text"], list):
+            text_list = []
+            for text in message["text"]:
+                if isinstance(text, dict):
+                    text_list.append(text["text"])
+                else:
+                    text_list.append(text)
+            message["text"] = " ".join(text_list)
+
+    promt = """Контекст:\n
+        Есть сообщения из чата онлайн-школы по анализу данных и машинному обучению\n
+        Задание:\n
+        Необходимо определить, является ли полученное сообщение вопросом по анализу данных или \
+        машинному обучению, отвечая на который, можно также приложить различные учебные \
+        материалы, ссылки, видео и т.д.\n
+        Необходимо учесть несколько нюансов:\n
+        - Не каждое сообщение, удовлетворяющее условию, является вопросом в явном виде.\n
+        - Часто искомые сообщения начинаются с обращения к студентам и просьбой решить какую-нибудь \
+        проблему.\n
+        - Также искомые сообщения обычно развернутые, и в них детально описывается суть проблемы.\n
+        - Но искомыми сообщениями не являются наводящие вопросы или ответы других студентов.\n
+        Если сообщение является искомым вопросом, ответить YES, если не является - \
+        ответить NO\n
+        ---------------------\n
+        MESSAGE #1: всем привет! кто пользуется datalens для визуализации, \
+        поделитесь плз своим мнением\n
+        YOUR ANSWER TO MESSAGE #1: YES\n
+        MESSAGE #2: пилите кастомный дашборд на питоне с помощью библиотеки plotly dash, \
+        разворачивайте его локально или на сервере\n
+        YOUR ANSWER TO MESSAGE #2: NO\n
+        MESSAGE #3: Всем привет. Подскажите, не смог найти решение в инете. \
+        Не смог в юпитере установить библиотеку catboost. \
+        Выскакивает ошибка: ERROR: Could not build wheels for catboost, \
+        which is required to install pyproject.toml-based projects. \
+        Работаю на mac m1. Что делать?)\n
+        YOUR ANSWER TO MESSAGE #3: YES\n
+        MESSAGE #4: А, и это ошибка инсталляции собственно?\n
+        YOUR ANSWER TO MESSAGE #4: NO\n"""
+
+    filtered_data = []
+    for message in data_json:
+        template = f"MESSAGE #5: {message['text']}\nYOUR ANSWER TO MESSAGE #5: "
+        response_object = openai.ChatCompletion.create(
+            model=llm_model, messages=[{"role": "user", "content": (promt + template)}]
+        )
+        response = response_object.choices[0]['message']['content']
+        print(template, response)
+        if response.strip() == "YES":
+            filtered_data.append(message)
+
+    with open(filtered_questions_path, "w", encoding="utf-8") as f:
+        json.dump(filtered_data, f, ensure_ascii=False, indent=4)
+
 
 def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) -> pd.DataFrame:
 
@@ -339,5 +401,23 @@ def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) 
 
     """
 
+
+# TODO append statistics for questions from chat
+def get_chat_statistics(parsed_chat_path: str) -> dict:
+    """
+    Gets chat statistics in the form of a dictionary with the following keys:
+    number of messages, number of unique users
+    """
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
+    msg_number = len(data_json)
+    unique_users = set()
+    for message in data_json:
+        unique_users.add(message["from_id"])
+    unique_users_number = len(unique_users)
+    return {"msg_number": msg_number, "unique_users_number": unique_users_number}
+
 if __name__ == "__main__":
-    get_questions_index("questions_index_storage", "video_info_test.json")
+    # get_questions_index("questions_index_storage", "video_info_test.json")
+    filter_questions_from_chat("chat_KK_prepared.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
+    # print(get_chat_statistics("chat_KK.json"))
