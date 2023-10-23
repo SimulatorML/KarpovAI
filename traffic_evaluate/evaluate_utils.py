@@ -378,8 +378,9 @@ def filter_questions_from_chat(parsed_chat_path: str,
         json.dump(filtered_data, f, ensure_ascii=False, indent=4)
 
 
-def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) -> pd.DataFrame:
-
+def get_questions_dataset(filtered_questions_path: str,
+                          index_folder_path: str,
+                          question_dataset_path: str):
     """
     Составляет датафрейм для исследования и отбора релевантных боту вопросов из чата.
     Этапы:
@@ -400,24 +401,57 @@ def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) 
         columns: 'chat_question', 'gen_question', 'similarity'
 
     """
+    with open(filtered_questions_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
 
+    storage_context = StorageContext.from_defaults(persist_dir=index_folder_path)
+    index = load_index_from_storage(storage_context)
+    retriever = index.as_retriever(similarity_top_k=1)
 
-# TODO append statistics for questions from chat
-def get_chat_statistics(parsed_chat_path: str) -> dict:
+    results = {
+        "chat_question": [],
+        "gen_question": [],
+        "similarity": []
+    }
+    for message in data_json:
+        chat_question = message["text"]
+        retrieved_nodes = retriever.retrieve(chat_question)
+
+        results["chat_question"].append(chat_question)
+        results["gen_question"].append(retrieved_nodes[0].node.text)
+        results["similarity"].append(retrieved_nodes[0].get_score())
+
+    df = pd.DataFrame(results)
+    df.to_csv(question_dataset_path)
+
+def get_chat_statistics(parsed_chat_path: str, filtered_questions_path: str) -> dict:
     """
     Gets chat statistics in the form of a dictionary with the following keys:
     number of messages, number of unique users
     """
     with open(parsed_chat_path, "r", encoding="utf-8") as f:
-        data_json = json.load(f)
-    msg_number = len(data_json)
+        parsed_data = json.load(f)
+    msg_number = len(parsed_data)
     unique_users = set()
-    for message in data_json:
+    for message in parsed_data:
         unique_users.add(message["from_id"])
     unique_users_number = len(unique_users)
-    return {"msg_number": msg_number, "unique_users_number": unique_users_number}
+
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        filtered_data = json.load(f)
+    qst_number = len(filtered_data)
+    unique_qst_users = set()
+    for message in filtered_data:
+        unique_qst_users.add(message["from_id"])
+    unique_qst_users_number = len(unique_users)
+
+    return {"msg_number": msg_number,
+            "unique_users_number": unique_users_number,
+            "questions_number": qst_number,
+            "unique_questions_user_number": unique_qst_users_number}
 
 if __name__ == "__main__":
     # get_questions_index("questions_index_storage", "video_info_test.json")
-    filter_questions_from_chat("chat_KK_prepared.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
+    # filter_questions_from_chat("chat_KK_prepared.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
     # print(get_chat_statistics("chat_KK.json"))
+    get_questions_dataset("chat_KK_filtered.json", "questions_index_storage")
