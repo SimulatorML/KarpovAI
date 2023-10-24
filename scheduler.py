@@ -25,7 +25,7 @@ def update_index():
         old_content = file.read()
 
     # Запускаем пайплайн. Если новые видео будут найдены, в файл добавятся их url-ы
-    subprocess.run(['python', r'data_pipelines/run_module.py'])
+    subprocess.run(['python', r'data_pipelines/index_pipeline.py'])
 
     # Открываем файл с url-ами после изменения
     with open(r'data/urls_of_channel_videos.txt', 'r') as file:
@@ -36,11 +36,7 @@ def update_index():
         print("No new videos found.")
     else:
         try:
-            stop_bot()  # Сначала останавливаем бот
-
-            # Тут нужно обновить индексы
-            # os.system("git pull")  # Обновляем код
-
+            stop_bot()  # Останавливаем бот
             subprocess.Popen(["python", APP_FILE])  # Перезапускаем бот
             print("Bot has been updated and restarted.")
         except Exception as e:
