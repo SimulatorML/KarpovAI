@@ -27,10 +27,11 @@ import os
 # parse json file with transcribed videos
 # and save a modified file
 import json
+
+import pandas as pd
 from dotenv import load_dotenv
 import openai
 
-import pandas as pd # my substitute for typing DataFrame
 from llama_index.schema import BaseNode
 
 # to pass the model object into the functions
@@ -44,7 +45,9 @@ from llama_index.node_parser import SimpleNodeParser
 
 # make node: question pairs
 from llama_index.evaluation import generate_question_context_pairs
+from llama_index.evaluation import RelevancyEvaluator, FaithfulnessEvaluator
 from llama_index import StorageContext, load_index_from_storage, VectorStoreIndex, ServiceContext
+from pytube import YouTube
 
 load_dotenv()
 openai.api_key = os.getenv("API_KEY")
@@ -363,8 +366,18 @@ def filter_questions_from_chat(parsed_chat_path: str,
         MESSAGE #4: А, и это ошибка инсталляции собственно?\n
         YOUR ANSWER TO MESSAGE #4: NO\n"""
 
-    filtered_data = []
-    for message in data_json:
+    if os.path.exists(filtered_questions_path):
+        with open(filtered_questions_path, "r", encoding="utf-8") as f:
+            filtered_data = json.load(f)
+            last_id = filtered_data["id"]
+    else:
+        filtered_data = {"id": 0, "content": []}
+        last_id = 0
+    for number_message, message in enumerate(data_json, 1):
+        if last_id >= number_message:
+            continue
+        filtered_data.update({"id": number_message})
+        print(f"Processed {number_message} message")
         template = f"MESSAGE #5: {message['text']}\nYOUR ANSWER TO MESSAGE #5: "
         response_object = openai.ChatCompletion.create(
             model=llm_model, messages=[{"role": "user", "content": (promt + template)}]
@@ -372,11 +385,9 @@ def filter_questions_from_chat(parsed_chat_path: str,
         response = response_object.choices[0]['message']['content']
         print(template, response)
         if response.strip() == "YES":
-            filtered_data.append(message)
-
-    with open(filtered_questions_path, "w", encoding="utf-8") as f:
-        json.dump(filtered_data, f, ensure_ascii=False, indent=4)
-
+            filtered_data["content"].append(message)
+        with open(filtered_questions_path, "w", encoding="utf-8") as f:
+            json.dump(filtered_data, f, ensure_ascii=False, indent=4)
 
 def get_questions_dataset(filtered_questions_path: str,
                           index_folder_path: str,
@@ -402,27 +413,76 @@ def get_questions_dataset(filtered_questions_path: str,
 
     """
     with open(filtered_questions_path, "r", encoding="utf-8") as f:
-        data_json = json.load(f)
+        data_json = json.load(f)["content"]
 
     storage_context = StorageContext.from_defaults(persist_dir=index_folder_path)
     index = load_index_from_storage(storage_context)
     retriever = index.as_retriever(similarity_top_k=1)
+    print("Index is loaded")
 
-    results = {
-        "chat_question": [],
-        "gen_question": [],
-        "similarity": []
-    }
-    for message in data_json:
+    gpt3 = OpenAI(temperature=0, model="gpt-3.5-turbo")
+    service_context_gpt3 = ServiceContext.from_defaults(llm=gpt3)
+    rel_evaluator_gpt3 = RelevancyEvaluator(service_context=service_context_gpt3)
+    faith_evaluator_gpt3 = FaithfulnessEvaluator(service_context=service_context_gpt3)
+
+    if os.path.exists(question_dataset_path):
+        with open(question_dataset_path, "r", encoding="utf-8") as f:
+            question_dataset = json.load(f)
+            last_id = question_dataset["id"]
+    else:
+        question_dataset = {"id": 0,
+                            "content":{
+                                "chat_question": [],
+                                "retrieved_node": [],
+                                "video_source": [],
+                                "response": [],
+                                "similarity": [],
+                                "faithfulness": [],
+                                "relevancy": []}
+                            }
+        last_id = 0
+    for number_message, message in enumerate(data_json, 1):
+        if last_id >= number_message:
+            continue
+        question_dataset.update({"id": number_message})
+        print(f"Processed {number_message} question")
         chat_question = message["text"]
-        retrieved_nodes = retriever.retrieve(chat_question)
+        if not chat_question:
+            continue
+        retrival = retriever.retrieve(chat_question)[0]
+        retrieved_node = retrival.node
 
-        results["chat_question"].append(chat_question)
-        results["gen_question"].append(retrieved_nodes[0].node.text)
-        results["similarity"].append(retrieved_nodes[0].get_score())
+        information_text = retrieved_node.text
+        information_url = f"Karpov.courses: {retrieved_node.metadata['url']} " \
+                          f"- {retrieved_node.metadata['title']})"
 
-    df = pd.DataFrame(results)
-    df.to_csv(question_dataset_path)
+        template = (
+            "Ниже мы предоставили контекстную информацию\n"
+            "---------------------\n"
+            f"{information_text}"
+            "\n---------------------\n"
+            f"Учитывая эту информацию, ответьте, пожалуйста, на вопрос: {chat_question}\n"
+        )
+        model_name = "gpt-3.5-turbo"
+        response = openai.ChatCompletion.create(
+            model=model_name, messages=[{"role": "user", "content": template}]
+        ).choices[0]['message']['content']
+
+        relevancy_score = rel_evaluator_gpt3.evaluate(chat_question,
+                                                      response,
+                                                      [information_text]).passing
+        faithfulness_score = faith_evaluator_gpt3.evaluate(chat_question,
+                                                           response,
+                                                           [information_text]).passing
+        question_dataset["content"]["chat_question"].append(chat_question)
+        question_dataset["content"]["retrieved_node"].append(information_text)
+        question_dataset["content"]["video_source"].append(information_url)
+        question_dataset["content"]["response"].append(response)
+        question_dataset["content"]["similarity"].append(retrival.get_score())
+        question_dataset["content"]["faithfulness"].append(faithfulness_score)
+        question_dataset["content"]["relevancy"].append(relevancy_score)
+        with open(question_dataset_path, "w", encoding="utf-8") as f:
+            json.dump(question_dataset, f, ensure_ascii=False, indent=4)
 
 def get_chat_statistics(parsed_chat_path: str, filtered_questions_path: str) -> dict:
     """
@@ -450,8 +510,35 @@ def get_chat_statistics(parsed_chat_path: str, filtered_questions_path: str) -> 
             "questions_number": qst_number,
             "unique_questions_user_number": unique_qst_users_number}
 
+def get_channel_info(url_file_path, csv_file_path):
+    """
+    Get video info - title, length, publish_date
+    """
+    videos = []
+    with open(url_file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            videos.append(line.strip())
+    video_data = {
+        "url": [],
+        "title": [],
+        "length": [],
+        "publish_date": []
+    }
+    for idx, video_url in enumerate(videos):
+        yt = YouTube(video_url)
+        video_data["url"].append(video_url)
+        video_data["title"].append(yt.title)
+        print(f"{idx} video {yt.title}")
+        video_data["length"].append(yt.length)
+        video_data["publish_date"].append(yt.publish_date)
+    df_video_data = pd.DataFrame(video_data)
+    df_video_data.to_csv(csv_file_path, index=False)
+
 if __name__ == "__main__":
     # get_questions_index("questions_index_storage", "video_info_test.json")
-    # filter_questions_from_chat("chat_KK_prepared.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
+    # filter_questions_from_chat("chat_KK.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
     # print(get_chat_statistics("chat_KK.json"))
-    get_questions_dataset("chat_KK_filtered.json", "questions_index_storage")
+    # get_questions_dataset("chat_KK_filtered.json",
+    #                       "../data/index_storage_1024",
+    #                       "question_dataset.json")
+    get_channel_info("../data/urls_of_channel_videos.txt", "date_lenght_video_info.csv")
