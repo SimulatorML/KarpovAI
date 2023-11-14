@@ -30,6 +30,12 @@ from llama_index.schema import BaseNode
 # and save a modified file
 import json
 
+import pandas as pd
+from dotenv import load_dotenv
+import openai
+
+from llama_index.schema import BaseNode
+
 # to pass the model object into the functions
 from llama_index.llms import OpenAI
 
@@ -41,6 +47,12 @@ from llama_index.node_parser import SimpleNodeParser
 
 # make node: question pairs
 from llama_index.evaluation import generate_question_context_pairs
+from llama_index.evaluation import RelevancyEvaluator, FaithfulnessEvaluator
+from llama_index import StorageContext, load_index_from_storage, VectorStoreIndex, ServiceContext
+from pytube import YouTube
+
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
 
 
 def process_nodes(nodes: List[BaseNode]) -> List[BaseNode]:
@@ -260,9 +272,76 @@ def filter_questions_from_chat(parsed_chat_path: str, filtered_questions_path: s
     -------
 
     """
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
 
-def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) -> pd.DataFrame:
+    # Convert metadata from text (links, bold, etc) to text
+    for message in data_json:
+        if isinstance(message["text"], list):
+            text_list = []
+            for text in message["text"]:
+                if isinstance(text, dict):
+                    text_list.append(text["text"])
+                else:
+                    text_list.append(text)
+            message["text"] = " ".join(text_list)
 
+    promt = """Контекст:\n
+        Есть сообщения из чата онлайн-школы по анализу данных и машинному обучению\n
+        Задание:\n
+        Необходимо определить, является ли полученное сообщение вопросом по анализу данных или \
+        машинному обучению, отвечая на который, можно также приложить различные учебные \
+        материалы, ссылки, видео и т.д.\n
+        Необходимо учесть несколько нюансов:\n
+        - Не каждое сообщение, удовлетворяющее условию, является вопросом в явном виде.\n
+        - Часто искомые сообщения начинаются с обращения к студентам и просьбой решить какую-нибудь \
+        проблему.\n
+        - Также искомые сообщения обычно развернутые, и в них детально описывается суть проблемы.\n
+        - Но искомыми сообщениями не являются наводящие вопросы или ответы других студентов.\n
+        Если сообщение является искомым вопросом, ответить YES, если не является - \
+        ответить NO\n
+        ---------------------\n
+        MESSAGE #1: всем привет! кто пользуется datalens для визуализации, \
+        поделитесь плз своим мнением\n
+        YOUR ANSWER TO MESSAGE #1: YES\n
+        MESSAGE #2: пилите кастомный дашборд на питоне с помощью библиотеки plotly dash, \
+        разворачивайте его локально или на сервере\n
+        YOUR ANSWER TO MESSAGE #2: NO\n
+        MESSAGE #3: Всем привет. Подскажите, не смог найти решение в инете. \
+        Не смог в юпитере установить библиотеку catboost. \
+        Выскакивает ошибка: ERROR: Could not build wheels for catboost, \
+        which is required to install pyproject.toml-based projects. \
+        Работаю на mac m1. Что делать?)\n
+        YOUR ANSWER TO MESSAGE #3: YES\n
+        MESSAGE #4: А, и это ошибка инсталляции собственно?\n
+        YOUR ANSWER TO MESSAGE #4: NO\n"""
+
+    if os.path.exists(filtered_questions_path):
+        with open(filtered_questions_path, "r", encoding="utf-8") as f:
+            filtered_data = json.load(f)
+            last_id = filtered_data["id"]
+    else:
+        filtered_data = {"id": 0, "content": []}
+        last_id = 0
+    for number_message, message in enumerate(data_json, 1):
+        if last_id >= number_message:
+            continue
+        filtered_data.update({"id": number_message})
+        print(f"Processed {number_message} message")
+        template = f"MESSAGE #5: {message['text']}\nYOUR ANSWER TO MESSAGE #5: "
+        response_object = openai.ChatCompletion.create(
+            model=llm_model, messages=[{"role": "user", "content": (promt + template)}]
+        )
+        response = response_object.choices[0]['message']['content']
+        print(template, response)
+        if response.strip() == "YES":
+            filtered_data["content"].append(message)
+        with open(filtered_questions_path, "w", encoding="utf-8") as f:
+            json.dump(filtered_data, f, ensure_ascii=False, indent=4)
+
+def get_questions_dataset(filtered_questions_path: str,
+                          index_folder_path: str,
+                          question_dataset_path: str):
     """
     Составляет датафрейм для исследования и отбора релевантных боту вопросов из чата.
     Этапы:
@@ -283,3 +362,133 @@ def get_questions_dataset(filtered_questions_path: str, index_folder_path: str) 
         columns: 'chat_question', 'gen_question', 'similarity'
 
     """
+    with open(filtered_questions_path, "r", encoding="utf-8") as f:
+        data_json = json.load(f)["content"]
+
+    storage_context = StorageContext.from_defaults(persist_dir=index_folder_path)
+    index = load_index_from_storage(storage_context)
+    retriever = index.as_retriever(similarity_top_k=1)
+    print("Index is loaded")
+
+    gpt3 = OpenAI(temperature=0, model="gpt-3.5-turbo")
+    service_context_gpt3 = ServiceContext.from_defaults(llm=gpt3)
+    rel_evaluator_gpt3 = RelevancyEvaluator(service_context=service_context_gpt3)
+    faith_evaluator_gpt3 = FaithfulnessEvaluator(service_context=service_context_gpt3)
+
+    if os.path.exists(question_dataset_path):
+        with open(question_dataset_path, "r", encoding="utf-8") as f:
+            question_dataset = json.load(f)
+            last_id = question_dataset["id"]
+    else:
+        question_dataset = {"id": 0,
+                            "content":{
+                                "chat_question": [],
+                                "retrieved_node": [],
+                                "video_source": [],
+                                "response": [],
+                                "similarity": [],
+                                "faithfulness": [],
+                                "relevancy": []}
+                            }
+        last_id = 0
+    for number_message, message in enumerate(data_json, 1):
+        if last_id >= number_message:
+            continue
+        question_dataset.update({"id": number_message})
+        print(f"Processed {number_message} question")
+        chat_question = message["text"]
+        if not chat_question:
+            continue
+        retrival = retriever.retrieve(chat_question)[0]
+        retrieved_node = retrival.node
+
+        information_text = retrieved_node.text
+        information_url = f"Karpov.courses: {retrieved_node.metadata['url']} " \
+                          f"- {retrieved_node.metadata['title']})"
+
+        template = (
+            "Ниже мы предоставили контекстную информацию\n"
+            "---------------------\n"
+            f"{information_text}"
+            "\n---------------------\n"
+            f"Учитывая эту информацию, ответьте, пожалуйста, на вопрос: {chat_question}\n"
+        )
+        model_name = "gpt-3.5-turbo"
+        response = openai.ChatCompletion.create(
+            model=model_name, messages=[{"role": "user", "content": template}]
+        ).choices[0]['message']['content']
+
+        relevancy_score = rel_evaluator_gpt3.evaluate(chat_question,
+                                                      response,
+                                                      [information_text]).passing
+        faithfulness_score = faith_evaluator_gpt3.evaluate(chat_question,
+                                                           response,
+                                                           [information_text]).passing
+        question_dataset["content"]["chat_question"].append(chat_question)
+        question_dataset["content"]["retrieved_node"].append(information_text)
+        question_dataset["content"]["video_source"].append(information_url)
+        question_dataset["content"]["response"].append(response)
+        question_dataset["content"]["similarity"].append(retrival.get_score())
+        question_dataset["content"]["faithfulness"].append(faithfulness_score)
+        question_dataset["content"]["relevancy"].append(relevancy_score)
+        with open(question_dataset_path, "w", encoding="utf-8") as f:
+            json.dump(question_dataset, f, ensure_ascii=False, indent=4)
+
+def get_chat_statistics(parsed_chat_path: str, filtered_questions_path: str) -> dict:
+    """
+    Gets chat statistics in the form of a dictionary with the following keys:
+    number of messages, number of unique users
+    """
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+    msg_number = len(parsed_data)
+    unique_users = set()
+    for message in parsed_data:
+        unique_users.add(message["from_id"])
+    unique_users_number = len(unique_users)
+
+    with open(parsed_chat_path, "r", encoding="utf-8") as f:
+        filtered_data = json.load(f)
+    qst_number = len(filtered_data)
+    unique_qst_users = set()
+    for message in filtered_data:
+        unique_qst_users.add(message["from_id"])
+    unique_qst_users_number = len(unique_users)
+
+    return {"msg_number": msg_number,
+            "unique_users_number": unique_users_number,
+            "questions_number": qst_number,
+            "unique_questions_user_number": unique_qst_users_number}
+
+def get_channel_info(url_file_path, csv_file_path):
+    """
+    Get video info - title, length, publish_date
+    """
+    videos = []
+    with open(url_file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            videos.append(line.strip())
+    video_data = {
+        "url": [],
+        "title": [],
+        "length": [],
+        "publish_date": []
+    }
+    for idx, video_url in enumerate(videos):
+        yt = YouTube(video_url)
+        video_data["url"].append(video_url)
+        video_data["title"].append(yt.title)
+        print(f"{idx} video {yt.title}")
+        video_data["length"].append(yt.length)
+        video_data["publish_date"].append(yt.publish_date)
+    df_video_data = pd.DataFrame(video_data)
+    df_video_data.to_csv(csv_file_path, index=False)
+
+if __name__ == "__main__":
+    # get_questions_index("questions_index_storage", "video_info_test.json")
+    # filter_questions_from_chat("chat_KK.json", "chat_KK_filtered.json", "gpt-3.5-turbo")
+    # print(get_chat_statistics("chat_KK.json"))
+    # get_questions_dataset("chat_KK_filtered.json",
+    #                       "../data/index_storage_1024",
+    #                       "question_dataset.json")
+    get_channel_info("../data/urls_of_channel_videos.txt", "date_lenght_video_info.csv")
