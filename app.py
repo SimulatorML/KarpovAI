@@ -27,9 +27,32 @@ logging.info("Завершена")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
+# Создаем асинхронную очередь
+message_queue = asyncio.Queue()
+
+async def message_worker():
+    """
+    Message queue handler
+    """
+    while True:
+        # Получаем задачу из очереди
+        chat_id, text = await message_queue.get()
+
+        # Отправляем сообщение
+        await bot.send_message(chat_id, text, parse_mode="HTML")
+
+        # Ждем 6 секунд перед обработкой следующей задачи
+        await asyncio.sleep(6)
+
+async def on_startup(dispatcher):
+    """
+    Run the task in the context of the current event cycle
+    """
+    asyncio.create_task(message_worker())
+
 async def keep_typing(chat_id, interval=5):
     """
-    Функция для поддержания эффекта 'печатания'.
+    Function to keep the "print" effect.
     """
     while True:
         await bot.send_chat_action(chat_id, 'typing')
@@ -149,7 +172,7 @@ async def handle_tag(message: types.Message):
         template_answer = await answer(user_message)
     finally:
         typing_task.cancel()
-    await message.answer(template_answer, parse_mode="HTML")
+    await message_queue.put((message.chat.id, template_answer))
 
 
 @dp.message_handler(lambda message: message.reply_to_message and
@@ -166,8 +189,18 @@ async def handle_reply(message: types.Message):
         template_answer = await answer(user_reply, reply_to_message=original_message)
     finally:
         typing_task.cancel()
-    await message.answer(template_answer, parse_mode="HTML")
+    await message_queue.put((message.chat.id, template_answer))
+
+@dp.message_handler(commands=["start", "help"])
+async def send_welcome(message: types.Message):
+    """
+    Sends a welcome message
+    """
+    greeting = "Привет, я бот KarpovAI!\n" \
+               "Я являюсь QA-системой на основе контента YouTube-канала Karpov.Courses.\n" \
+               "Для того, чтобы я ответил на твой вопрос, тегни меня: @karpovAI_bot\n" \
+               "Бот создан студентами <a href='https://karpov.courses/simulator-ml'>SimulatorML</a>"
+    await message_queue.put((message.chat.id, greeting))
 
 if __name__ == "__main__":
-
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
