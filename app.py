@@ -2,6 +2,7 @@ import os
 import logging
 from aiogram import Bot, Dispatcher, types, executor
 import openai
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from llama_index import StorageContext, load_index_from_storage
 
@@ -10,6 +11,10 @@ load_dotenv()
 TOKEN = os.getenv("TG_TOKEN")
 openai.api_key = os.getenv("API_KEY")
 BOT_ID = int(os.getenv("BOT_ID"))
+client = AsyncOpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    # api_key="My API Key",
+)
 
 # Инициализация вашей системы
 logging.info("Инициализация началась")
@@ -43,7 +48,7 @@ async def answer(user_message: str, reply_to_message = None):
                   f"<b>Ответ:</b>"
     else:
         message = user_message
-    retrival = query_engine.query(message)
+    retrival = await query_engine.aquery(message)
     information = [
         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
     ]
@@ -74,7 +79,8 @@ async def answer(user_message: str, reply_to_message = None):
 
     logging.info("Сообщение сформировано и отправлено в OpenAI")
     model_name = "gpt-3.5-turbo-1106"
-    context_response = openai.ChatCompletion.create(
+    
+    context_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": context_prompt}]
     )
     logging.info(context_response.choices[0]['message']['content'])
@@ -94,7 +100,7 @@ async def answer(user_message: str, reply_to_message = None):
         f"MESSAGE #3: {context_response.choices[0]['message']['content']}\n"
         f"YOUR ANSWER TO MESSAGE #3:"
     )
-    evaluate_response = openai.ChatCompletion.create(
+    evaluate_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": evaluate_promt}]
     )
     logging.info(evaluate_response.choices[0]['message']['content'])
@@ -107,11 +113,12 @@ async def answer(user_message: str, reply_to_message = None):
         main_response = context_response.choices[0]['message']['content']
         extended_answer = f"<b>Подробнее здесь:</b> \n\n{information_url}"
     else:
-        main_response = dont_match_start_phrase + openai.ChatCompletion.create(
+        gpt_response = await client.chat.completions.create(
             model=model_name,
             temperature=0,
             messages=[{"role": "user", "content": message}]
         ).choices[0]['message']['content']
+        main_response = dont_match_start_phrase + gpt_response
         extended_answer = ""
 
     template_answer = (
