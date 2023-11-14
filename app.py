@@ -1,8 +1,9 @@
 import os
 import logging
+import asyncio
+import re
 from aiogram import Bot, Dispatcher, types, executor
 import openai
-from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from llama_index import StorageContext, load_index_from_storage
 
@@ -11,14 +12,9 @@ load_dotenv()
 TOKEN = os.getenv("TG_TOKEN")
 openai.api_key = os.getenv("API_KEY")
 BOT_ID = int(os.getenv("BOT_ID"))
-client = AsyncOpenAI(
-    # defaults to os.environ.get("OPENAI_API_KEY")
-    # api_key="My API Key",
-)
 
 # Инициализация вашей системы
 logging.info("Инициализация началась")
-# print("Инициализация началась")
 storage_cntxt = StorageContext.from_defaults(persist_dir="./data/index_storage_1024")
 idx = load_index_from_storage(storage_cntxt)
 query_engine = idx.as_query_engine(
@@ -30,6 +26,14 @@ query_engine = idx.as_query_engine(
 logging.info("Завершена")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
+
+async def keep_typing(chat_id, interval=5):
+    """
+    Функция для поддержания эффекта 'печатания'.
+    """
+    while True:
+        await bot.send_chat_action(chat_id, 'typing')
+        await asyncio.sleep(interval)
 
 async def answer(user_message: str, reply_to_message = None):
     """
@@ -43,12 +47,15 @@ async def answer(user_message: str, reply_to_message = None):
             .replace('"', "&quot;")
         )
 
+    regex = re.compile(r"Вопрос: (.*?) \n\n", re.DOTALL)
     if not reply_to_message is None:
         message = f"{reply_to_message}\n\n<b>Вопрос:</b><i>{escape_html(user_message)}<i> \n\n" \
                   f"<b>Ответ:</b>"
+        retrival_query = regex.findall(reply_to_message)[0] + escape_html(user_message)
+        retrival = await query_engine.aquery(retrival_query)
     else:
         message = user_message
-    retrival = await query_engine.aquery(message)
+        retrival = await query_engine.aquery(message)
     information = [
         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
     ]
@@ -79,8 +86,8 @@ async def answer(user_message: str, reply_to_message = None):
 
     logging.info("Сообщение сформировано и отправлено в OpenAI")
     model_name = "gpt-3.5-turbo-1106"
-    
-    context_response = await client.chat.completions.create(
+
+    context_response = await openai.ChatCompletion.acreate(
         model=model_name, temperature=0, messages=[{"role": "user", "content": context_prompt}]
     )
     logging.info(context_response.choices[0]['message']['content'])
@@ -97,10 +104,12 @@ async def answer(user_message: str, reply_to_message = None):
         "MESSAGE #2: Из предоставленной контекстной информации нельзя однозначно определить, "
         "рассматривается ли тема с временными рядами в курсах корпорации Karpov inc..\n"
         "YOUR ANSWER TO MESSAGE #2: NO\n"
-        f"MESSAGE #3: {context_response.choices[0]['message']['content']}\n"
-        f"YOUR ANSWER TO MESSAGE #3:"
+        "MESSAGE #3: Извините, я не могу ответить на этот вопрос без дополнительной информации. \n"
+        "YOUR ANSWER TO MESSAGE #3: NO\n"
+        f"MESSAGE #4: {context_response.choices[0]['message']['content']}\n"
+        f"YOUR ANSWER TO MESSAGE #4:"
     )
-    evaluate_response = await client.chat.completions.create(
+    evaluate_response = await openai.ChatCompletion.acreate(
         model=model_name, temperature=0, messages=[{"role": "user", "content": evaluate_promt}]
     )
     logging.info(evaluate_response.choices[0]['message']['content'])
@@ -113,12 +122,12 @@ async def answer(user_message: str, reply_to_message = None):
         main_response = context_response.choices[0]['message']['content']
         extended_answer = f"<b>Подробнее здесь:</b> \n\n{information_url}"
     else:
-        gpt_response = await client.chat.completions.create(
+        gpt_response = await openai.ChatCompletion.acreate(
             model=model_name,
             temperature=0,
             messages=[{"role": "user", "content": message}]
-        ).choices[0]['message']['content']
-        main_response = dont_match_start_phrase + gpt_response
+        )
+        main_response = dont_match_start_phrase + gpt_response.choices[0]['message']['content']
         extended_answer = ""
 
     template_answer = (
@@ -134,9 +143,12 @@ async def handle_tag(message: types.Message):
     KarpovAI bot tag function
     """
     logging.info("Сообщение принято")
-    # print("Сообщение принято")
-    user_message = message.text.replace("@karpovAI_bot", "").strip()
-    template_answer = await answer(user_message)
+    typing_task = asyncio.create_task(keep_typing(message.chat.id))
+    try:
+        user_message = message.text.replace("@karpovAI_bot", "").strip()
+        template_answer = await answer(user_message)
+    finally:
+        typing_task.cancel()
     await message.answer(template_answer, parse_mode="HTML")
 
 
@@ -146,9 +158,14 @@ async def handle_reply(message: types.Message):
     """
     KarpovAI bot reply function
     """
-    original_message = message.reply_to_message.text  # Сообщение бота
-    user_reply = message.text  # Новое сообщение пользователя
-    template_answer = await answer(user_reply, reply_to_message=original_message)
+    logging.info("Сообщение принято")
+    typing_task = asyncio.create_task(keep_typing(message.chat.id))
+    try:
+        original_message = message.reply_to_message.text
+        user_reply = message.text
+        template_answer = await answer(user_reply, reply_to_message=original_message)
+    finally:
+        typing_task.cancel()
     await message.answer(template_answer, parse_mode="HTML")
 
 if __name__ == "__main__":
