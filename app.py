@@ -160,6 +160,17 @@ async def answer(user_message: str, reply_to_message = None):
     )
     return template_answer
 
+@dp.message_handler(commands=["start", "help"])
+async def send_welcome(message: types.Message):
+    """
+    Sends a welcome message
+    """
+    greeting = "Привет, я бот KarpovAI!\n" \
+               "Я являюсь QA-системой на основе контента YouTube-канала Karpov.Courses.\n" \
+               "Для того, чтобы я ответил на твой вопрос, тегни меня: @karpovAI_bot\n" \
+               "Бот создан студентами <a href='https://karpov.courses/simulator-ml'>SimulatorML</a>"
+    await message_queue.put((message.chat.id, greeting))
+
 @dp.message_handler(lambda message: "@karpovAI_bot" in message.text)
 async def handle_tag(message: types.Message):
     """
@@ -190,17 +201,6 @@ async def handle_reply(message: types.Message):
     finally:
         typing_task.cancel()
     await message_queue.put((message.chat.id, template_answer))
-
-@dp.message_handler(commands=["start", "help"])
-async def send_welcome(message: types.Message):
-    """
-    Sends a welcome message
-    """
-    greeting = "Привет, я бот KarpovAI!\n" \
-               "Я являюсь QA-системой на основе контента YouTube-канала Karpov.Courses.\n" \
-               "Для того, чтобы я ответил на твой вопрос, тегни меня: @karpovAI_bot\n" \
-               "Бот создан студентами <a href='https://karpov.courses/simulator-ml'>SimulatorML</a>"
-    await message_queue.put((message.chat.id, greeting))
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
