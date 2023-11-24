@@ -1,5 +1,4 @@
 # KarpovAI
----
 Telegram bot aimed at helping within data science-related queries. Runs with GPT 3.5 (default) under the hood, powered with a Retrieval Augmented Generation (RAG) system connected to a vector database of transcribed data science videos corpus. With the help of llamaindex, it retrieves the most relevant node and asks GPT to answer the question based on the context, if possible.
 
 ## Features
@@ -26,8 +25,7 @@ Telegram bot aimed at helping within data science-related queries. Runs with GPT
 - Access to GPT with OpenAI API token
 
 ### Installation
-1. Clone the repository:
-`git clone [repository URL]`
+1. Clone the repository.
 2. Install the dependencies:
 `pip install -r requirements.txt`
 
