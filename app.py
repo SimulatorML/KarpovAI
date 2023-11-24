@@ -4,13 +4,13 @@ import asyncio
 import re
 from aiogram import Bot, Dispatcher, types, executor
 import openai
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from llama_index import StorageContext, load_index_from_storage
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 TOKEN = os.getenv("TG_TOKEN")
-openai.api_key = os.getenv("API_KEY")
 BOT_ID = int(os.getenv("BOT_ID"))
 
 # Инициализация вашей системы
@@ -26,6 +26,7 @@ query_engine = idx.as_query_engine(
 logging.info("Завершена")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
+client = AsyncOpenAI()
 
 # Создаем асинхронную очередь
 message_queue = asyncio.Queue()
@@ -58,7 +59,7 @@ async def keep_typing(chat_id, interval=5):
         await bot.send_chat_action(chat_id, 'typing')
         await asyncio.sleep(interval)
 
-async def answer(user_message: str, reply_to_message = None):
+async def answer(user_message: str, reply_to_message=None):
     """
     Common function for getting answer from GPT
     """
@@ -110,10 +111,11 @@ async def answer(user_message: str, reply_to_message = None):
     logging.info("Сообщение сформировано и отправлено в OpenAI")
     model_name = "gpt-3.5-turbo-1106"
 
-    context_response = await openai.ChatCompletion.acreate(
+    context_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": context_prompt}]
     )
-    logging.info(context_response.choices[0]['message']['content'])
+    logging.info(context_response.choices[0].message.content)
+    # logging.info(context_response.choices[0]['message']['content'])
 
     evaluate_promt = (
         "Есть ответы на вопросы некоторых пользователей. Даны только ответы."
@@ -129,28 +131,28 @@ async def answer(user_message: str, reply_to_message = None):
         "YOUR ANSWER TO MESSAGE #2: NO\n"
         "MESSAGE #3: Извините, я не могу ответить на этот вопрос без дополнительной информации. \n"
         "YOUR ANSWER TO MESSAGE #3: NO\n"
-        f"MESSAGE #4: {context_response.choices[0]['message']['content']}\n"
+        f"MESSAGE #4: {context_response.choices[0].message.content}\n"
         f"YOUR ANSWER TO MESSAGE #4:"
     )
-    evaluate_response = await openai.ChatCompletion.acreate(
+    evaluate_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": evaluate_promt}]
     )
-    logging.info(evaluate_response.choices[0]['message']['content'])
+    logging.info(evaluate_response.choices[0].message.content)
 
     dont_match_start_phrase = "К сожалению, я не могу ответить на этот вопрос, " \
                               "основываясь на роликах с YouTube-канала Karpov.Courses, " \
                               "но могу сам ответить на него.\n"
 
-    if evaluate_response.choices[0]['message']['content'].strip() == "YES":
-        main_response = context_response.choices[0]['message']['content']
+    if evaluate_response.choices[0].message.content.strip() == "YES":
+        main_response = context_response.choices[0].message.content
         extended_answer = f"<b>Подробнее здесь:</b> \n\n{information_url}"
     else:
-        gpt_response = await openai.ChatCompletion.acreate(
+        gpt_response = await client.chat.completions.create(
             model=model_name,
             temperature=0,
             messages=[{"role": "user", "content": message}]
         )
-        main_response = dont_match_start_phrase + gpt_response.choices[0]['message']['content']
+        main_response = dont_match_start_phrase + gpt_response.choices[0].message.content
         extended_answer = ""
 
     template_answer = (
@@ -180,7 +182,10 @@ async def handle_tag(message: types.Message):
     typing_task = asyncio.create_task(keep_typing(message.chat.id))
     try:
         user_message = message.text.replace("@karpovAI_bot", "").strip()
-        template_answer = await answer(user_message)
+        try:
+            template_answer = await answer(user_message)
+        except openai.APITimeoutError:
+            template_answer = "Сервис пока не доступен. Попробуйте обратиться позже"
     finally:
         typing_task.cancel()
     await message_queue.put((message.chat.id, template_answer))
@@ -197,7 +202,10 @@ async def handle_reply(message: types.Message):
     try:
         original_message = message.reply_to_message.text
         user_reply = message.text
-        template_answer = await answer(user_reply, reply_to_message=original_message)
+        try:
+            template_answer = await answer(user_reply, reply_to_message=original_message)
+        except openai.APITimeoutError:
+            template_answer = "Сервис пока не доступен. Попробуйте обратиться позже"
     finally:
         typing_task.cancel()
     await message_queue.put((message.chat.id, template_answer))
