@@ -2,21 +2,29 @@ import os
 import logging
 import asyncio
 import re
+import httpx
 from aiogram import Bot, Dispatcher, types, executor
 import openai
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from llama_index import StorageContext, load_index_from_storage
+from llama_index import StorageContext, load_index_from_storage, ServiceContext
+from custom_embedding import OpenAIEmbeddingProxy
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 TOKEN = os.getenv("TG_TOKEN")
 BOT_ID = int(os.getenv("BOT_ID"))
+PROXY = os.getenv("PROXY")
 
 # Инициализация вашей системы
 logging.info("Инициализация началась")
+http_client = httpx.AsyncClient(proxies=PROXY)
+embed_model = OpenAIEmbeddingProxy(http_client=http_client)
+service_context = ServiceContext.from_defaults(embed_model=embed_model)
 storage_cntxt = StorageContext.from_defaults(persist_dir="./data/index_storage_1024")
-idx = load_index_from_storage(storage_cntxt)
+idx = load_index_from_storage(storage_cntxt,
+                              service_context=service_context,
+                              )
 query_engine = idx.as_query_engine(
     include_text=True,
     response_mode="no_text",
@@ -26,7 +34,9 @@ query_engine = idx.as_query_engine(
 logging.info("Завершена")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
-client = AsyncOpenAI()
+client = AsyncOpenAI(
+    http_client=http_client
+)
 
 # Создаем асинхронную очередь
 message_queue = asyncio.Queue()
