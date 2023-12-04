@@ -4,13 +4,17 @@ import subprocess
 import time
 from dataclasses import dataclass
 from typing import List
+import httpx
 from dotenv import load_dotenv
 import openai
+from openai import OpenAI
 from pytube import Channel
 from pytube import YouTube
 
 load_dotenv()
-openai.api_key = os.getenv("API_KEY")
+PROXY = os.getenv("PROXY")
+http_client = httpx.Client(proxies=PROXY)
+client = OpenAI(http_client=http_client)
 
 @dataclass()
 class ParserTranscribe:
@@ -144,7 +148,7 @@ class ParserTranscribe:
 
         Raises
         ------
-        openai.error.APIError
+        openai.APITimeoutError
             Если после всех попыток транскрибировать аудио возникает ошибка.
 
         """
@@ -152,7 +156,7 @@ class ParserTranscribe:
         for attempt in range(self.max_attempts):
             try:
                 with open(audio_path, "rb") as audio_file:
-                    transcript = openai.Audio.transcribe(
+                    transcript = client.audio.transcriptions.create(
                         file=audio_file,
                         model="whisper-1",
                         response_format="text",
@@ -162,7 +166,7 @@ class ParserTranscribe:
                                " dev ops, девопс, stepik.org, степик",
                     )
                 return transcript
-            except openai.error.APIError as e:
+            except openai.APITimeoutError as e:
                 print(f"Ошибка при обращении к API (попытка {attempt + 1}): {e}")
                 if attempt < self.max_attempts - 1:  # если это не последняя попытка
                     print(f"Ожидание {self.delay} секунд перед следующей попыткой...")
@@ -228,5 +232,5 @@ if __name__ == "__main__":
         "../data/audio",
         "../data/video_info.json"
     )
-    parser.get_transcribe_video("https://www.youtube.com/watch?v=OXtOhjeiTzw")
+    parser.get_transcribe_video("https://www.youtube.com/watch?v=MJMjGRU8uUc")
     parser.get_transcribe_video("https://www.youtube.com/watch?v=9W1v-DkXriY")

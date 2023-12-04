@@ -2,16 +2,18 @@ import os
 import json
 from dataclasses import dataclass
 from typing import List
+import httpx
 from dotenv import load_dotenv
-import openai
 from llama_index import Document
 from llama_index.node_parser import SimpleNodeParser
 from llama_index import StorageContext, load_index_from_storage
 from llama_index import VectorStoreIndex, ServiceContext
 from data_pipelines.parser_transcribe import ParserTranscribe, get_video_urls
+from custom_embedding import OpenAIEmbeddingProxy
 
 load_dotenv()
-openai.api_key = os.getenv("API_KEY")
+PROXY = os.getenv("PROXY")
+http_client = httpx.Client(proxies=PROXY)
 
 @dataclass()
 class IndexPipeline:
@@ -66,19 +68,20 @@ class IndexPipeline:
         Или создает новый индекс, если self.storage_index_path не существует
         3. Сохраняет индекс
         """
-
+        embed_model = OpenAIEmbeddingProxy(http_client=http_client)
+        node_parser = SimpleNodeParser.from_defaults(
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap
+        )
+        service_context = ServiceContext.from_defaults(node_parser=node_parser,
+                                                       embed_model=embed_model)
         # Загружаем индекс
-        vector_store_path = os.path.join(self.index_folder, "vector_store.json")
-        if os.path.exists(vector_store_path):
+        index_store_path = os.path.join(self.index_folder, "index_store.json")
+        if os.path.exists(index_store_path):
             storage_context = StorageContext.from_defaults(persist_dir=self.index_folder)
-            index = load_index_from_storage(storage_context)
+            index = load_index_from_storage(storage_context, service_context=service_context)
         else:
             # Или создаем пустой
-            node_parser = SimpleNodeParser.from_defaults(
-                chunk_size=self.chunk_size,
-                chunk_overlap=self.chunk_overlap
-            )
-            service_context = ServiceContext.from_defaults(node_parser=node_parser)
             index = VectorStoreIndex([], service_context=service_context)
 
         # Выбираем документы для добавления в индекс
@@ -113,7 +116,7 @@ class IndexPipeline:
         new_videos = self._get_download_urls(channel_url)
         if new_videos:
             if test:
-                new_videos = new_videos[:2]
+                new_videos = new_videos[:1]
             self._transcribe_videos(new_videos)
             self._get_index(new_videos)
         else:
@@ -124,59 +127,7 @@ if __name__ == "__main__":
         "../data/audio",
         "../data/urls_of_channel_videos.txt",
         "../data/video_info.json",
-        "../data/index_storage_2048",
-        chunk_size=2048
+        "../data/index_storage_1024",
+        chunk_size=1024
     )
-    # pipe.run("https://www.youtube.com/c/karpovcourses")
-    # storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage_1500")
-    # idx = load_index_from_storage(storage_cntxt)
-    # print("Index is loaded")
-    # query_engine = idx.as_query_engine(
-    #     include_text=True,
-    #     response_mode="no_text",
-    #     embedding_mode="hybrid",
-    #     similarity_top_k=5,
-    # )
-    #
-    # while True:
-    #     question = input()
-    #     if question == "exit":
-    #         break
-    #     retrival = query_engine.query(
-    #         question,
-    #     )
-    #     print(f"Q: {question}")
-    #     information = [
-    #         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
-    #     ]
-    #     for i in information:
-    #         print(i[2], "\n", i[0])
-
-
-    # with open("../data/video_info.json", "r", encoding="utf-8") as file:
-    #     data_list = json.load(file)
-    # crawling_urls = []
-    # for itm in data_list:
-    #     if itm["text"]:
-    #         crawling_urls.append(itm["url"][0])
-    # print(f"Number of crawling urls: {len(crawling_urls)}")
-    #
-    # all_videos = set()
-    # with open("../data/urls_of_channel_videos.txt", "r", encoding="utf-8") as file:
-    #     for line in file:
-    #         all_videos.add(line.strip())
-    # print(f"Total number urls: {len(all_videos)}")
-    #
-    # not_crawling = list(all_videos - set(crawling_urls))
-    # print(f"Number of not crawling urls {len(not_crawling)}")
-    # pipe._transcribe_videos(not_crawling)
-    #
-    #
-    with open("../data/video_info.json", "r", encoding="utf-8") as file:
-        data_list = json.load(file)
-    transcribe_urls = []
-    for itm in data_list:
-        if itm["text"]:
-            transcribe_urls.append(itm["url"][0])
-    pipe._get_index(transcribe_urls)
-    # ./data/audio/9W1v-DkXriY
+    pipe.run("https://www.youtube.com/c/karpovcourses")
