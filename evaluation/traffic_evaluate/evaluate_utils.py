@@ -2,15 +2,15 @@
 Скрипт с функциями для оценки трафика тг-бота.
 
 Порядок оценки трафика:
-1. Генерируем вопросы к каждому видео.
-2. Получаем поисковый индекс для каждого вопроса.
+1. Генерируем вопросы к каждому видео. (`process_nodes` + `generate_video_questions`)
+2. Получаем поисковый индекс для каждого вопроса. (`get_questions_index`)
 3. Парсим основной тг-чат Karpov.Courses за последний месяц, получаем json с сообщениями.
 Парсер отдельным файлом.
-4. С помощью gpt-3.5-turbo отбираем сообщения, которые содержат вопрос.
+4. С помощью gpt-3.5-turbo отбираем сообщения, которые содержат вопрос. (`filter_questions_from_chat`)
 5. Для каждого вопроса из тг-чата получаем один retrival из индекса с вопросами
-(Этот retrival будет ближайшим по similarity к вопросу из чата).
+(Этот retrival будет ближайшим по similarity к вопросу из чата). (`get_questions_dataset`)
 6. Замеряем similarity между вопросом из чата и ближайшим сгенерированным вопросом.
-Собираем датасет с колонками 'chat_question', 'gen_question', 'similarity'.
+Собираем датасет с колонками 'chat_question', 'gen_question', 'similarity'. (`get_questions_dataset`)
 7. Исследуем значения similarity, выбираем отсечку.
 
 Функции:
@@ -21,9 +21,12 @@
 - filter_questions_from_chat - функция отбора вопросов из тг-чата с помощью gpt-3.5-turbo.
 - get_questions_dataset - функция получения датасета для исследования релевантных боту вопросов.
 """
+
+
+import os
+
+# typing
 from typing import List
-# from typing import DataFrame # - not works at my machine...
-import pandas as pd # my substitute for typing DataFrame
 from llama_index.schema import BaseNode
 
 # parse json file with transcribed videos
@@ -33,8 +36,6 @@ import json
 import pandas as pd
 from dotenv import load_dotenv
 import openai
-
-from llama_index.schema import BaseNode
 
 # to pass the model object into the functions
 from llama_index.llms import OpenAI
