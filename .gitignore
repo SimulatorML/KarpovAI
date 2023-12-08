@@ -5,4 +5,4 @@
 .DS_Store
 .pylintrc
 data/index_storage*
-data/index_storage
+# data/index_storage
