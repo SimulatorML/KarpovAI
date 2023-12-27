@@ -1,16 +1,21 @@
 """
 Utilites for RAG system evaluation.
 Question generation:
-    class NodeSampler - sample informative nodes
-    class QAGenerator - generate questions, link them to the initial video json
+    class NodeSampler:
+        sample informative nodes
+    class QAGenerator:
+        generate questions, link them to the initial video json
 Evaluation:
-    to be added.
+    class Validator:
+        get the context and answers to the provided questions,
+        evaluate the retrival/answering using the provided evaluators.
 """
 
 
 # typing
-from typing import List, Sequence
+from typing import List, Sequence, Dict
 
+import asyncio
 import json
 
 # for sampling of the nodes
@@ -18,12 +23,25 @@ import numpy as np
 
 # imports for typing
 from llama_index.schema import BaseNode
+from llama_index.indices.base import BaseIndex
+from llama_index.evaluation.base import BaseEvaluator
 from llama_index.evaluation import EmbeddingQAFinetuneDataset
+from llama_index.embeddings.openai import OpenAIEmbedding
 
-from llama_index import Document
+from llama_index import (
+                    Document,
+                    StorageContext,
+                    load_index_from_storage,
+                    ServiceContext
+                )
 from llama_index.llms import OpenAI
 from llama_index.node_parser import SimpleNodeParser
-from llama_index.evaluation import generate_question_context_pairs
+from llama_index.evaluation import (
+                            generate_question_context_pairs,
+                            RelevancyEvaluator,
+                            FaithfulnessEvaluator
+                            )
+from llama_index.indices.postprocessor import PrevNextNodePostprocessor
 
 
 class NodeSampler:
@@ -74,7 +92,7 @@ class NodeSampler:
         Returns:
         - list: A processed list of BaseNode objects.
         """
-        
+
         # Initialize an empty list to store the processed nodes
         result = []
 
@@ -149,7 +167,7 @@ class NodeSampler:
         parser = SimpleNodeParser.from_defaults(chunk_size=chunk_size)
         nodes = parser.get_nodes_from_documents(docs)
 
-        # process the nodes to discard the last node of the video 
+        # process the nodes to discard the last node of the video
         # if it is very shortened during splitting
         nodes = self._filtered_nodes(nodes)
 
@@ -201,12 +219,13 @@ class QAGenerator:
         """
 
         if not llm:
-                # initialize the model
-                llm = OpenAI(temperature=0, model="gpt-3.5-turbo-1106")
+            # initialize the model
+            llm = OpenAI(temperature=0, model="gpt-3.5-turbo-1106")
 
         if not qa_generate_prompt_tmpl:
             # make a prompt template
             qa_generate_prompt_tmpl = """\
+            Ты - эксперт в составлении вопросов в области анализа данных.
             Внизу указана контекстная информация.
 
             ---------------------
@@ -216,11 +235,11 @@ class QAGenerator:
             На основе приведенного текста составь только один вопрос, \
             на который можно ответить с помощью текста. \
             Вопрос должен покрыть как можно больше аспектов в тексте. \
-            Он должен быть только на основе привденного текста \
+            Он должен быть только на основе приведенного текста \
             и относиться к области анализа данных.
             Пожалуйста, ограничь размер вопроса 10 словами."
             """
-        
+
         self.llm = llm
         self.qa_generate_prompt_tmpl = qa_generate_prompt_tmpl
 
@@ -259,7 +278,7 @@ class QAGenerator:
             qa_generate_prompt_tmpl=self.qa_generate_prompt_tmpl,
             num_questions_per_chunk=1
             )
-        
+
         # save EmbeddingQAFinetuneDataset json if required
         if save_json:
             if not qa_json_path:
@@ -319,13 +338,13 @@ class QAGenerator:
 
         # link question_id: node_id
         question_id_node_id = {
-            question_id: qa_dataset.relevant_docs[question_id][0] 
+            question_id: qa_dataset.relevant_docs[question_id][0]
             for question_id in qa_dataset.relevant_docs
             }
 
         # link question_id: video_url
         question_id_url = {
-            question_id: node_id_url[question_id_node_id[question_id]] 
+            question_id: node_id_url[question_id_node_id[question_id]]
             for question_id in question_id_node_id
             }
 
@@ -364,3 +383,261 @@ class QAGenerator:
             json.dump(doc_json, f, ensure_ascii=False, indent=4)
 
         return qa_dataset
+
+
+class Validator:
+    """
+    Given a set of questions, pulls the most relevant node(s),
+    asks LLM to answer questions based on the provided context
+    and validates the resulting answers
+    """
+    def __init__(
+        self,
+        client,
+        semaphore: asyncio.Semaphore,
+        index: BaseIndex = None,
+        persist_dir: str = None,
+        has_node_postprocessors: bool = False,
+        num_nodes: int = 1,
+        node_postprocessors_mode: str = 'both',
+        embed_model = OpenAIEmbedding,
+        context_prompt: str = None,
+        top_k: int = 3,
+    ):
+        """
+        Parameters:
+        -----------
+        client: OpenAI async client
+        semaphore: asyncio.Semaphore
+            Semaphore object to control concurrent requests
+        index: BaseIndex
+            (defaults None)
+            Index database instantiated
+            If None, tries to load from the directory provided.
+        persist_dir: str
+            (default None)
+            directory of an index database
+        has_node_postprocessors: bool
+            (default False)
+            Whether to include neighbouring nodes
+            from the original document
+            for the context.
+        num_nodes: int
+            (default 1)
+            if has_node_postprocessors set True,
+            indicates number of neighbouring nodes to retrieve.
+        node_postprocessors_mode: str
+            (default 'both')
+            if has_node_postprocessors set True,
+            indicates whether to go forward ('next'),
+            backward ('previous'), or both ('both').
+        embed_model
+            (default OpenAIEmbedding)
+            model to get embeddings, used in the index.
+            Not used if the index was provided.
+        context_prompt: str
+            (default None)
+            prompt to use for answer generation
+            if None, uses default prompt
+        top_k: int
+            (default 3)
+            number of most relevant nodes to retrieve
+        
+        Raises:
+        -------
+        ValueError
+            if both index and persist_dir are None.
+        """
+        # get an index if not provided
+        if not index:
+            if not persist_dir:
+                raise ValueError(
+                    'Provide either index or directory to load index from, none was provided.'
+                    )
+            storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
+            service_context = ServiceContext.from_defaults(embed_model=embed_model)
+            index = load_index_from_storage(storage_context, service_context=service_context)
+
+        # get a prompt if not provided
+        if not context_prompt:
+            context_prompt = (
+                "Ниже мы предоставили контекстную информацию\n"
+                "---------------------\n"
+                "{information_text}"
+                "\n---------------------\n"
+                "Учитывая эту информацию, ответьте, пожалуйста, на вопрос: {query}\n"
+                "\n---------------------\n"
+                "Ответ на вопрос должен быть развернутым, полным, и охватывать множество "
+                "аспектов заданного вопроса"
+            )
+
+        # params to create query engine
+        params = {
+            "include_text": True,
+            "response_mode": "no_text",
+            "embedding_mode": "hybrid",
+            "similarity_top_k": top_k
+        }
+
+        # if retrieving neighboring nodes as well
+        if has_node_postprocessors:
+            postprocessor = PrevNextNodePostprocessor(
+            docstore=index.docstore,
+            num_nodes=num_nodes,  # number of nodes to fetch when looking forwards or backwards
+            mode=node_postprocessors_mode,  # can be either 'next', 'previous', or 'both'
+        )
+            params['node_postprocessors'] = [postprocessor]
+
+        self.query_engine = index.as_query_engine(**params)
+
+        self.context_prompt = context_prompt
+        self.client = client
+        self.semaphore = semaphore
+
+    async def answer_evaluated(
+        self,
+        query: str,
+        output_table: List[dict],
+        model_name: str = "gpt-3.5-turbo-1106",
+        evaluators: Dict[str, BaseEvaluator] = None,
+    ):
+        """
+        Get an answer for a given query based on the retrieved context.
+        Also, validates the answer using provided evaluators.
+
+        Parameters:
+        -----------
+        query: str
+            query to answer
+        output_table: List[dict]
+            list to append results to.
+            results are in a form of key-value pairs:
+                'query': question asked
+                'sources': node text used for answering
+                'sources_urls': video urls of the nodes
+                'response': llm response
+                'metric_name': value of a metric_name from evaluators
+        model_name: str
+            (default gpt-3.5-turbo-1106)
+            name of llm for answering
+        evaluators: Dict[str, BaseEvaluator]
+            (default None)
+            dict with metric name: Evaluator pairs
+            if None, relevancy and faithfullness are used
+            with RelevancyEvaluator and FaithfullnessEvaluator.                      
+        """
+        async with self.semaphore:
+            # to be used in output
+            evaluate_result = {}
+
+            # get the relevant nodes
+            retrival = await self.query_engine.aquery(query)
+            information = [
+                (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
+            ]
+
+            # get the text and URL metadata of the retrieved nodes
+            information_text = " ".join([text for text, _, _ in information])
+            information_urls = list(
+                {
+                f"Karpov.courses: {url} - {title})" for _, url, title in information
+            }
+            )
+
+            contexts = [node.text for node in retrival.source_nodes]
+
+            # add the retrieved data to the output
+            evaluate_result["query"] = query
+            evaluate_result["sources"] = contexts
+            evaluate_result["sources_urls"] = information_urls
+
+            # query the model with the provided query and retrieved context
+            response = await self.client.chat.completions.create(
+                model=model_name,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": self.context_prompt.format_map(
+                        {
+                            'information_text': information_text,
+                            'query': query
+                        }
+                    )
+                    }
+                    ]
+            )
+
+            # get the response, add it to the output
+            response = response.choices[0].message.content
+            evaluate_result["response"] = response
+
+            # evaluate and add the result to the output
+            for metric_name, evaluator in evaluators.items():
+                evaluate_result[metric_name] = await evaluator.aevaluate(
+                    query,
+                    response,
+                    contexts
+                    )
+                evaluate_result[metric_name] = evaluate_result[metric_name].passing
+
+            output_table.append(evaluate_result)
+
+    async def answers_evaluated_list(
+        self,
+        queries: Sequence[str],
+        output_path: str,
+        model_name: str = "gpt-3.5-turbo-1106",
+        evaluators: Dict[str, BaseEvaluator] = None,
+    ):
+        """
+        Get answers for given queries based on the retrieved contexts.
+        Also, validate the answers using provided evaluators.
+
+        Parameters:
+        -----------
+        query: str
+            query to answer
+        output_path: str
+            path to put result to as JSON.
+            result is list of dictionaries of key-value pairs:
+                'query': question asked
+                'sources': node text used for answering
+                'sources_url': video url of the node
+                'response': llm response
+                'metric_name': value of a metric_name from evaluators  
+        model_name: str
+            (default gpt-3.5-turbo-1106)
+            name of llm for answering
+        evaluators: Dict[str, BaseEvaluator]
+            (default None)
+            dict with metric name: Evaluator pairs
+            if None, relevancy and faithfullness are used
+            with RelevancyEvaluator and FaithfullnessEvaluator.  
+        """
+        # get the evaluators if not provided
+        if not evaluators:
+            evaluators = {
+                'relevancy': RelevancyEvaluator(),
+                'faithfullness': FaithfulnessEvaluator()
+            }
+        # to be used by answer_evaluated()
+        output_table = []
+
+        # parallelize the retrieving/querying tasks
+        async with asyncio.TaskGroup() as tg:
+            _ = [
+                tg.create_task(
+                self.answer_evaluated(
+                    query=query,
+                    output_table=output_table,
+                    model_name=model_name,
+                    evaluators=evaluators,
+                )
+            )
+            for query in queries
+            ]
+
+        # write resulting dataset to the JSON
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(output_table, f, ensure_ascii=False, indent=4)
