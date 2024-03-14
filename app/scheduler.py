@@ -1,10 +1,18 @@
 import time
 import logging
+from logging.handlers import RotatingFileHandler
 import subprocess
 from dataclasses import dataclass
 import schedule
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(module)s: %(message)s",
+    handlers=[
+        RotatingFileHandler("logs/app.log", maxBytes=5000000, backupCount=2),
+        logging.StreamHandler()
+    ]
+)
 
 
 @dataclass()
@@ -53,7 +61,7 @@ class Scheduler:
 
         # Планируем обновление индексов
         # schedule.every().sunday.at("03:00").do(self.update_index)
-        schedule.every().day.at("20:10").do(self.update_index)
+        schedule.every().day.at("23:16").do(self.update_index)
 
         # Запускаем шедулер
         while True:

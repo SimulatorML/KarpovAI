@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 from dataclasses import dataclass
 from typing import List
 import httpx
@@ -12,7 +13,14 @@ from llama_index import VectorStoreIndex, ServiceContext
 from data_pipelines.parser_transcribe import ParserTranscribe, get_video_urls
 from app.custom_embedding import OpenAIEmbeddingProxy
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(module)s: %(message)s",
+    handlers=[
+        RotatingFileHandler("../app/logs/app.log", maxBytes=5000000, backupCount=2),
+        logging.StreamHandler()
+    ]
+)
 load_dotenv()
 PROXY = os.getenv("PROXY")
 http_client = httpx.Client(proxies=PROXY)

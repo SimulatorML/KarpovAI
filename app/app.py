@@ -1,5 +1,6 @@
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 import asyncio
 import re
 import pickle
@@ -13,7 +14,14 @@ from llama_index import StorageContext, load_index_from_storage, ServiceContext
 from custom_embedding import OpenAIEmbeddingProxy
 from utils import predict_with_trained_model
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(module)s: %(message)s",
+    handlers=[
+        RotatingFileHandler("logs/app.log", maxBytes=5000000, backupCount=2),
+        logging.StreamHandler()
+    ]
+)
 load_dotenv()
 TOKEN = os.getenv("TG_TOKEN")
 BOT_ID = int(os.getenv("BOT_ID"))

@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import subprocess
 import time
 from dataclasses import dataclass
@@ -12,7 +13,14 @@ from openai import OpenAI
 from pytube import Channel
 from pytube import YouTube
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(module)s: %(message)s",
+    handlers=[
+        RotatingFileHandler("../app/logs/app.log", maxBytes=5000000, backupCount=2),
+        logging.StreamHandler()
+    ]
+)
 load_dotenv()
 PROXY = os.getenv("PROXY")
 http_client = httpx.Client(proxies=PROXY)
