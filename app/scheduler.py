@@ -60,8 +60,8 @@ class Scheduler:
         self.bot_process = subprocess.Popen(["python", self.app_file])
 
         # Планируем обновление индексов
-        # schedule.every().sunday.at("03:00").do(self.update_index)
-        schedule.every().day.at("23:16").do(self.update_index)
+        schedule.every().sunday.at("03:00").do(self.update_index)
+        # schedule.every().day.at("23:16").do(self.update_index)
 
         # Запускаем шедулер
         while True:
