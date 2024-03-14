@@ -1,0 +1,802 @@
+{
+    "0": {
+        "link": "https://www.youtube.com/watch?v=OXtOhjeiTzw",
+        "title": "Работа аналитиком за рубежом | Голосовой чат | karpov.courses"
+    },
+    "1": {
+        "link": "https://www.youtube.com/watch?v=Pu6ALdXRBtY",
+        "title": "Машинное обучение в аналитике: как работают деревья решений | Анатолий Карпов | karpov.courses"
+    },
+    "2": {
+        "link": "https://www.youtube.com/watch?v=UnhkAPWGeW0",
+        "title": "Что можно делать со списками? Какие методы бывают у списков в Python"
+    },
+    "3": {
+        "link": "https://www.youtube.com/watch?v=wMJviKbzM5o",
+        "title": "Как использовать метод apply для трансформации колонок?"
+    },
+    "4": {
+        "link": "https://www.youtube.com/watch?v=ClwKrqX2KDU",
+        "title": "Моделирование течения инфекционных заболеваний | Вебинар Яна Пиле | karpov.courses"
+    },
+    "5": {
+        "link": "https://www.youtube.com/watch?v=gZZSHN4pUU8",
+        "title": "От данных к метрикам"
+    },
+    "6": {
+        "link": "https://www.youtube.com/watch?v=h1ORh1Zcz9s",
+        "title": "Что такое конструкция IF ELSE"
+    },
+    "7": {
+        "link": "https://www.youtube.com/watch?v=JI8XMduJfMs",
+        "title": "DataLens: подключение данных | karpov.courses"
+    },
+    "8": {
+        "link": "https://www.youtube.com/watch?v=xRFXcA3Gi2U",
+        "title": "Обзор базовых инструментов дата-сайентиста. Часть 2: VS Code | Алексей Кожарин | karpov.courses"
+    },
+    "9": {
+        "link": "https://www.youtube.com/watch?v=VV3N0RmDbdE",
+        "title": "Что делать, если заказчик просит делать только таблички и не хочет графики | karpov.courses"
+    },
+    "10": {
+        "link": "https://www.youtube.com/watch?v=_QxzYcrMNE8",
+        "title": "Как бизнес использует пользовательские данные | Артур Хачуян | karpov.courses"
+    },
+    "11": {
+        "link": "https://www.youtube.com/watch?v=NcDcxOqB52k",
+        "title": "Об A/B тестах без A/B тестов | Никита Маршалкин | karpov.courses"
+    },
+    "12": {
+        "link": "https://www.youtube.com/watch?v=x75U0qUA4PM",
+        "title": "Словари"
+    },
+    "13": {
+        "link": "https://www.youtube.com/watch?v=_5K1P8QQ5hs",
+        "title": "Максим Годзи о приёмах Data Science в продуктовой аналитике | Часть 2 | karpov.courses"
+    },
+    "14": {
+        "link": "https://www.youtube.com/watch?v=5j_4ztce86k",
+        "title": "Как научиться считывать данные из таблиц?"
+    },
+    "15": {
+        "link": "https://www.youtube.com/watch?v=vSr1OSYJuu4",
+        "title": "Ксюша Байдина — Пермь, Германия, Яндекс | Подкаст | karpov.courses"
+    },
+    "16": {
+        "link": "https://www.youtube.com/watch?v=-X8LWW8r4S4",
+        "title": "Саша Сергеев — войти в IT из любопытства | Подкаст | karpov.courses"
+    },
+    "17": {
+        "link": "https://www.youtube.com/watch?v=Api2RW4ogR4",
+        "title": "Зачем нужно проходить Симулятор ML? | karpov.courses"
+    },
+    "18": {
+        "link": "https://www.youtube.com/watch?v=BrrvxphwDcw",
+        "title": "Как сделать предподготовку данных? Реальные примеры"
+    },
+    "19": {
+        "link": "https://www.youtube.com/watch?v=ZY0ywLXKUkI",
+        "title": "Как автоматизировать скучную работу в Pandas ?"
+    },
+    "20": {
+        "link": "https://www.youtube.com/watch?v=gljfGAkgX_o",
+        "title": "Никита Маршалкин: A/B-тесты сложнее, чем кажется | Интервью | karpov.courses"
+    },
+    "21": {
+        "link": "https://www.youtube.com/watch?v=-zps6hm0nX8",
+        "title": "Карта статистических методов - bootstrap VS t - test | Вебинар Анатолия Карпова | karpov.courses"
+    },
+    "22": {
+        "link": "https://www.youtube.com/watch?v=2QhJYIsAU7I",
+        "title": "Зачем нужен курс Hard ML? | Валерий Бабушкин | karpov.courses"
+    },
+    "23": {
+        "link": "https://www.youtube.com/watch?v=I1h2YaWW9PE",
+        "title": "Docker. Поднимаем PostgreSQL, ClickHouse и Superset | karpov.courses"
+    },
+    "24": {
+        "link": "https://www.youtube.com/watch?v=2nP_gcut7SU",
+        "title": "Как и зачем оценивать размер выборки для A/B теста?"
+    },
+    "25": {
+        "link": "https://www.youtube.com/watch?v=EXyxNE47Gz4",
+        "title": "Решение оптимизационных задач неградиентными методами | Вебинар Игоря Котенкова | karpov.courses"
+    },
+    "26": {
+        "link": "https://www.youtube.com/watch?v=v3T8p_75vd4",
+        "title": "Визуализация как метод исследования данных"
+    },
+    "27": {
+        "link": "https://www.youtube.com/watch?v=X9wtuV_DjrU",
+        "title": "Приступаем к аналитике"
+    },
+    "28": {
+        "link": "https://www.youtube.com/watch?v=yQ7qHZBY5xI",
+        "title": "Как применять оконные функции в SQL и Pandas | Анатолий Карпов | karpov.courses"
+    },
+    "29": {
+        "link": "https://www.youtube.com/watch?v=McXzllkKWjk",
+        "title": "Работа с Join в Pandas | Анатолий Карпов | karpov.courses"
+    },
+    "30": {
+        "link": "https://www.youtube.com/watch?v=ABqW7QZL6sw",
+        "title": "CatBoost на больших данных | Вебинар Александра Савченко | karpov.courses"
+    },
+    "31": {
+        "link": "https://www.youtube.com/watch?v=IL7sWMOazXQ",
+        "title": "Вероятностная калибровка на примере Probability Calibration Trees | Вебинар | karpov.courses"
+    },
+    "32": {
+        "link": "https://www.youtube.com/watch?v=LHKVcx115fw",
+        "title": "Денис Пехтерев — от мечты стать CEO до карьеры в аналитике данных | Подкаст | karpov.courses"
+    },
+    "33": {
+        "link": "https://www.youtube.com/watch?v=uMWuhEJ1obo",
+        "title": "Иван Иванчей о машинном обучении и психологии | Интервью | karpov.courses"
+    },
+    "34": {
+        "link": "https://www.youtube.com/watch?v=CcRuaCEBXpM",
+        "title": "Алексей Чернобровов о том, как Data Science приносит пользу бизнесу | Интервью | karpov.courses"
+    },
+    "35": {
+        "link": "https://www.youtube.com/watch?v=2Obawm2vzDo",
+        "title": "Как проходить собеседования аналитику данных? | Анатолий Карпов | Голосовой чат | karpov.courses"
+    },
+    "36": {
+        "link": "https://www.youtube.com/watch?v=SNJzZ5snpS8",
+        "title": "О Симуляторе аналитика данных | Анатолий Карпов | karpov.courses"
+    },
+    "37": {
+        "link": "https://www.youtube.com/watch?v=SASCRdieEP8",
+        "title": "SQL запросы в Pandas | Анатолий Карпов | karpov.courses"
+    },
+    "38": {
+        "link": "https://www.youtube.com/watch?v=fRU_PXSRNCc",
+        "title": "Фильтрация данных в Pandas | Анатолий Карпов | karpov.courses"
+    },
+    "39": {
+        "link": "https://www.youtube.com/watch?v=jnFVmtaeSA0",
+        "title": "Тонкости A/B тестирования: проблема подглядывания | Вебинар Анатолия Карпова | karpov.courses"
+    },
+    "40": {
+        "link": "https://www.youtube.com/watch?v=PgatmqhdGkk",
+        "title": "Лёша Баталов — в Яндекс на первую работу | Подкаст | karpov.courses"
+    },
+    "41": {
+        "link": "https://www.youtube.com/watch?v=RObC1BqDSms",
+        "title": "Lambda функции для быстрых вычислений"
+    },
+    "42": {
+        "link": "https://www.youtube.com/watch?v=WU8vSVBB7O4",
+        "title": "Под капотом Tableau | Вебинар Романа Бунина | karpov.courses"
+    },
+    "43": {
+        "link": "https://www.youtube.com/watch?v=vwA2JeYM3Lc",
+        "title": "В IT из декрета и без опыта — как это было | Подкаст | karpov.courses"
+    },
+    "44": {
+        "link": "https://www.youtube.com/watch?v=k5lIzSTsNY4",
+        "title": "Основатели Experiment Fest об образовании, анализе данных и бизнесе | Интервью | karpov.courses"
+    },
+    "45": {
+        "link": "https://www.youtube.com/watch?v=EW1dr9sdsyQ",
+        "title": "Визуализация в Superset: плюсы и минусы | Анатолий Карпов | karpov.courses"
+    },
+    "46": {
+        "link": "https://www.youtube.com/watch?v=fNGIOb8SJvU",
+        "title": "Гибкие методологии проектирования Data Vault и Anchor Modeling | Евгений Ермаков | karpov.courses"
+    },
+    "47": {
+        "link": "https://www.youtube.com/watch?v=r05eBsZgnI0",
+        "title": "Способы самопроверки при анализе данных"
+    },
+    "48": {
+        "link": "https://www.youtube.com/watch?v=1-ADJNE1WNc",
+        "title": "Введение в GLM: что это такое и как всё становится хуже | Вебинар | karpov.courses"
+    },
+    "49": {
+        "link": "https://www.youtube.com/watch?v=1Irng_IZV84",
+        "title": "Анализ данных в Pandas | Вебинар Анатолия Карпова | karpov.courses"
+    },
+    "50": {
+        "link": "https://www.youtube.com/watch?v=aLEDlTvLRPQ",
+        "title": "Как оценить эффективность рекламной кампании. Считаем Retention Rate в ClickHouse | Беслан Курашов"
+    },
+    "51": {
+        "link": "https://www.youtube.com/watch?v=8MzvjrWUJ_0",
+        "title": "Снижение дисперсии через стратификацию Сuped | Валерий Бабушкин | Вводный урок | karpov.courses"
+    },
+    "52": {
+        "link": "https://www.youtube.com/watch?v=mome3DWQqg0",
+        "title": "Алексей Никушин: аналитика, маркетинг, МатеМаркетинг | Интервью | karpov.courses"
+    },
+    "53": {
+        "link": "https://www.youtube.com/watch?v=ku6dJLg72NY",
+        "title": "Объединение данных, метод merge"
+    },
+    "54": {
+        "link": "https://www.youtube.com/watch?v=svk9GmIMR3U",
+        "title": "Аналитик данных | Собеседование | karpov.courses"
+    },
+    "55": {
+        "link": "https://www.youtube.com/watch?v=ZoHVAB00-bc",
+        "title": "О том, как стать аналитиком в большой компании | Беслан Курашов | karpov.courses"
+    },
+    "56": {
+        "link": "https://www.youtube.com/watch?v=EFDnfaevY4Q",
+        "title": "Junior аналитик данных | Собеседование | karpov.courses"
+    },
+    "57": {
+        "link": "https://www.youtube.com/watch?v=75retgH-WiA",
+        "title": "Методы и атрибуты DataFrame, метод Rename"
+    },
+    "58": {
+        "link": "https://www.youtube.com/watch?v=ObzlKVCiBqI",
+        "title": "A/B-тесты с метриками-отношениями и при чём здесь внутрипользовательские корреляции | karpov.courses"
+    },
+    "59": {
+        "link": "https://www.youtube.com/watch?v=Ec6EYbcF50k",
+        "title": "Открытое собеседование по статистике с Анатолием Карповым | karpov.courses"
+    },
+    "60": {
+        "link": "https://www.youtube.com/watch?v=gujnUx7fveY",
+        "title": "Поведенческое интервью | Behavioral Interview | Выпуск 3 | Валерий Бабушкин | karpov.courses"
+    },
+    "61": {
+        "link": "https://www.youtube.com/watch?v=ohTEPtkhGM8",
+        "title": "Работа с массивами в ClickHouse | Мария Сомова | karpov.courses"
+    },
+    "62": {
+        "link": "https://www.youtube.com/watch?v=ShbWTtOyobE",
+        "title": "Кластеризация временных рядов: зачем, кому и как | Вебинар Станислава Гафарова | karpov.courses"
+    },
+    "63": {
+        "link": "https://www.youtube.com/watch?v=Ppl6w-_aRjM",
+        "title": "Елена Серёгина – из жены браузера в аналитический консалтинг | Подкаст | karpov.courses"
+    },
+    "64": {
+        "link": "https://www.youtube.com/watch?v=kWipfZhBpE0",
+        "title": "Шум и GAM: обобщённые аддитивные модели | Вебинар Александра Манаенкова | karpov.courses"
+    },
+    "65": {
+        "link": "https://www.youtube.com/watch?v=iqbsHiSnZQE",
+        "title": "System Design с Валерием Бабушкиным | Выпуск 3 | Собеседование | karpov.courses"
+    },
+    "66": {
+        "link": "https://www.youtube.com/watch?v=arlz6jQ921E",
+        "title": "Влад Грозин о рекомендательных системах и Data Science | Интервью | karpov.courses"
+    },
+    "67": {
+        "link": "https://www.youtube.com/watch?v=oKBQsrE_sM8",
+        "title": "Илья Богин — Тернистый путь программиста с самого детства | Подкаст | karpov.courses"
+    },
+    "68": {
+        "link": "https://www.youtube.com/watch?v=55y2GKvfYPc",
+        "title": "Игорь Котенков обо всём, что вы хотели узнать о карьере в DS | Интервью | karpov.courses"
+    },
+    "69": {
+        "link": "https://www.youtube.com/watch?v=hoI2_839aEY",
+        "title": "Влад Петрашкевич — из арабиста в Full Stack разработчика | Подкаст | karpov.courses"
+    },
+    "70": {
+        "link": "https://www.youtube.com/watch?v=hfrNLA-cHqo",
+        "title": "Валерий Бабушкин: от карьеры в химометрике до директора по анализу данных | Подкаст | karpov.courses"
+    },
+    "71": {
+        "link": "https://www.youtube.com/watch?v=ChmbECud7g0",
+        "title": "Максим Годзи о приёмах Data Science в продуктовой аналитике | Интервью | Часть 1 | karpov.courses"
+    },
+    "72": {
+        "link": "https://www.youtube.com/watch?v=XGFrnaYIbVQ",
+        "title": "Анатолий Карпов – Как стать хорошим аналитиком | Подкаст | karpov.courses"
+    },
+    "73": {
+        "link": "https://www.youtube.com/watch?v=25QL56CxchQ",
+        "title": "Беслан Курашов о работе в Яндексе и карьере аналитика | Интервью | karpov.courses"
+    },
+    "74": {
+        "link": "https://www.youtube.com/watch?v=pRiRpOg64-4",
+        "title": "Data lake и DWH: практический опыт | Вебинар Александра Волынского | karpov.courses"
+    },
+    "75": {
+        "link": "https://www.youtube.com/watch?v=hvMvNmiaW8M",
+        "title": "Анатолий Карпов – о каждом модуле курса «Аналитик данных»"
+    },
+    "76": {
+        "link": "https://www.youtube.com/watch?v=J-w7qAm6aTA",
+        "title": "Что такое группировка, агрегация, сортировка данных?"
+    },
+    "77": {
+        "link": "https://www.youtube.com/watch?v=1Kvw_kpIUPA",
+        "title": "Релокация Data Science-специалиста | Голосовой чат | karpov.courses"
+    },
+    "78": {
+        "link": "https://www.youtube.com/watch?v=uojIIS8eAhY",
+        "title": "Андрей Бреслав — о науке, разработке Kotlin и создании сервиса Alter | Подкаст | karpov.courses"
+    },
+    "79": {
+        "link": "https://www.youtube.com/watch?v=DmetraJABBU",
+        "title": "О разнице зарплат аналитиков в России и за рубежом | Валерий Бабушкин | karpov.courses"
+    },
+    "80": {
+        "link": "https://www.youtube.com/watch?v=TLOOlI2b38c",
+        "title": "Ярослав Баранов – хотел в науку, а попал в IT | Подкаст | karpov.courses"
+    },
+    "81": {
+        "link": "https://www.youtube.com/watch?v=dlc7yJ6BGxE",
+        "title": "Константин Павлов о маркетинговой аналитике | Интервью | karpov.courses"
+    },
+    "82": {
+        "link": "https://www.youtube.com/watch?v=32adYT59UE4",
+        "title": "Почему аналитика данных — это база в Data Science | karpov.courses"
+    },
+    "83": {
+        "link": "https://www.youtube.com/watch?v=PZK47FxzWsk",
+        "title": "DataLens: дашборды, селекторы и параметры | karpov.courses"
+    },
+    "84": {
+        "link": "https://www.youtube.com/watch?v=1ts1bfjC58w",
+        "title": "Q&A | Вебинар команды Симулятора ML | karpov.courses"
+    },
+    "85": {
+        "link": "https://www.youtube.com/watch?v=PjMpSVbDuZ0",
+        "title": "Лаврентий Данилов: Машинное обучение в биологии"
+    },
+    "86": {
+        "link": "https://www.youtube.com/watch?v=w-0NdY8y-4Y",
+        "title": "Валерий Бабушкин о работе в Facebook и трендах Data Science | Интервью | karpov.courses"
+    },
+    "87": {
+        "link": "https://www.youtube.com/watch?v=4KtrmB8dZwo",
+        "title": "Обзор базовых инструментов дата-сайентиста | Вебинар Алексея Кожарина | karpov.courses"
+    },
+    "88": {
+        "link": "https://www.youtube.com/watch?v=c1u1gM6x1Tg",
+        "title": "Учимся использовать метод строк FORMAT"
+    },
+    "89": {
+        "link": "https://www.youtube.com/watch?v=3ugO9ftG3uA",
+        "title": "Александр Сахнов: задача о пустых полках в супермаркете"
+    },
+    "90": {
+        "link": "https://www.youtube.com/watch?v=rbIpf8fDYyE",
+        "title": "Обзор курса «Инженер данных» | Евгений Ермаков (Яндекс.Go) | karpov.courses"
+    },
+    "91": {
+        "link": "https://www.youtube.com/watch?v=TOK7Kq7x0yc",
+        "title": "Методы обнаружения выбросов | Вебинар Яна Пиле | karpov.courses"
+    },
+    "92": {
+        "link": "https://www.youtube.com/watch?v=39iwf3N1juo",
+        "title": "Data Engineer 2022 | Дорожная карта | Александр Савченко | karpov.courses"
+    },
+    "93": {
+        "link": "https://www.youtube.com/watch?v=RQGiMlcq4FE",
+        "title": "DataLens: создание чартов и расчетные поля | karpov.courses"
+    },
+    "94": {
+        "link": "https://www.youtube.com/watch?v=1odgyAkhjRI",
+        "title": "Маша Чакчурина — бухгалтерия, астрофизика, свой курс по Python | Подкаст | karpov.courses"
+    },
+    "95": {
+        "link": "https://www.youtube.com/watch?v=8b0NiATN1xg",
+        "title": "Алексей Никушин – Как собрать конференцию аналитиков | Подкаст | karpov.courses"
+    },
+    "96": {
+        "link": "https://www.youtube.com/watch?v=VWOge47iwOM",
+        "title": "Влад Прищепов – аналитик, который хотел в продакты | Подкаст | karpov.courses"
+    },
+    "97": {
+        "link": "https://www.youtube.com/watch?v=u-xjI5etUlM",
+        "title": "Дарья Яковлева о работе в Google и машинном обучении ВКонтакте | Интервью | karpov.courses"
+    },
+    "98": {
+        "link": "https://www.youtube.com/watch?v=VPg2Uu1MYgI",
+        "title": "ML System Design с Валерием Бабушкиным | Выпуск 1 | Собеседование |  karpov.courses"
+    },
+    "99": {
+        "link": "https://www.youtube.com/watch?v=3X-TAuWdIAc",
+        "title": "ML System Design с Валерием Бабушкиным | Выпуск 3 | Собеседование | karpov.courses"
+    },
+    "100": {
+        "link": "https://www.youtube.com/watch?v=mhEpREw4oKU",
+        "title": "Unit-экономика мобильных приложений | Вебинар Ярослава Баранова | karpov.courses"
+    },
+    "101": {
+        "link": "https://www.youtube.com/watch?v=Ae0YO1izn84",
+        "title": "Аналитика мобильных приложений, с чего начать? | Вебинар Ярослава Баранова | karpov.courses"
+    },
+    "102": {
+        "link": "https://www.youtube.com/watch?v=HTBLj6GRVHI",
+        "title": "Junior ML-инженер | Собеседование | karpov.courses"
+    },
+    "103": {
+        "link": "https://www.youtube.com/watch?v=NV_zTFqa8KY",
+        "title": "Симулятор аналитика: что будет на курсе? | Анатолий Карпов | karpov.courses"
+    },
+    "104": {
+        "link": "https://www.youtube.com/watch?v=IQUt9qTsQ0s",
+        "title": "10 вопросов про A/B-тесты | Часть 1 | Валерий Бабушкин | karpov.courses"
+    },
+    "105": {
+        "link": "https://www.youtube.com/watch?v=ANlm1kP3orQ",
+        "title": "Никита Елаков — как сменить хоккей на QA | Подкаст | karpov.courses"
+    },
+    "106": {
+        "link": "https://www.youtube.com/watch?v=NHLTY9vfElw",
+        "title": "Дмитрий Смелов — Самообучение как путь в IT | Подкаст | karpov.courses"
+    },
+    "107": {
+        "link": "https://www.youtube.com/watch?v=fXCfO3hKv4w",
+        "title": "Какая роль у аналитика в команде?"
+    },
+    "108": {
+        "link": "https://www.youtube.com/watch?v=lOQa2M_-C1k",
+        "title": "Полезные функции Clickhouse | Анатолий Карпов | karpov.courses"
+    },
+    "109": {
+        "link": "https://www.youtube.com/watch?v=Glu_-XffZB0",
+        "title": "Математика для машинного обучения"
+    },
+    "110": {
+        "link": "https://www.youtube.com/watch?v=WKYPQtqE-m0",
+        "title": "ML System Design с Валерием Бабушкиным | Выпуск 2 | Собеседование | karpov.courses"
+    },
+    "111": {
+        "link": "https://www.youtube.com/watch?v=c7TTe5_cnc0",
+        "title": "Арамаис Малхасян — в аналитики из семьи врачей | Подкаст | karpov.courses"
+    },
+    "112": {
+        "link": "https://www.youtube.com/watch?v=EM7RQhqhr34",
+        "title": "Андрей Кротких — как попасть в IT из желания помогать людям | Подкаст | karpov.courses"
+    },
+    "113": {
+        "link": "https://www.youtube.com/watch?v=JQXCHE0H46U",
+        "title": "Прогнозирование метрик с помощью Facebook Prophet | Вебинар Беслана Курашова | karpov.courses"
+    },
+    "114": {
+        "link": "https://www.youtube.com/watch?v=kFpj3ActhII",
+        "title": "Настя Маркианова — что сделать с ИИ, чтобы признать, что у него есть разум? |Подкаст| karpov.courses"
+    },
+    "115": {
+        "link": "https://www.youtube.com/watch?v=hv6jonYDwzI",
+        "title": "Кем стать в Data Science? | karpov.courses"
+    },
+    "116": {
+        "link": "https://www.youtube.com/watch?v=SMRI4qKgyq8",
+        "title": "Мария Жавадова о том, как стать аналитиком данных | Интервью | karpov.courses"
+    },
+    "117": {
+        "link": "https://www.youtube.com/watch?v=-GDUvH924V8",
+        "title": "10 вопросов про A/B-тесты | Часть 2 | Валерий Бабушкин | karpov.courses"
+    },
+    "118": {
+        "link": "https://www.youtube.com/watch?v=R3B9G1CVxfk",
+        "title": "Андрей Еськов — уйти в разработку после 10 лет в банке | Подкаст | karpov.courses"
+    },
+    "119": {
+        "link": "https://www.youtube.com/watch?v=K_G4UVqVfAE",
+        "title": "Дима Шестернин — о программировании и переборке машин | Подкаст | karpov.courses"
+    },
+    "120": {
+        "link": "https://www.youtube.com/watch?v=gAYrmR8XalQ",
+        "title": "О карьерном пути аналитика сегодня | Алексей Никушин | karpov.courses"
+    },
+    "121": {
+        "link": "https://www.youtube.com/watch?v=2QLHcgYtCt4",
+        "title": "Андрей Себрант — из советской науки в IT маркетинг | Подкаст | karpov.courses"
+    },
+    "122": {
+        "link": "https://www.youtube.com/watch?v=UHQ5bv-_Wzg",
+        "title": "Никита Васильев — как учиться проходить собеседования на собеседованиях | Подкаст | karpov.courses"
+    },
+    "123": {
+        "link": "https://www.youtube.com/watch?v=cj6Cghd1BKI",
+        "title": "Женя Козлов — Я был первым аналитиком Яндекс Маркета  | Подкаст | karpov.courses"
+    },
+    "124": {
+        "link": "https://www.youtube.com/watch?v=6ftRaV895zU",
+        "title": "Артур Хачуян о Big Data в рекламе и политике | Интервью | karpov.courses"
+    },
+    "125": {
+        "link": "https://www.youtube.com/watch?v=mnKqCLaBhtc",
+        "title": "Junior ML-инженер | Выпуск 1 | Собеседование | karpov.courses"
+    },
+    "126": {
+        "link": "https://www.youtube.com/watch?v=cC1Z7r2WO9E",
+        "title": "Как построить ML ценообразование на маркетплейсе | Вебинар Богдана Печёнкина | karpov.courses"
+    },
+    "127": {
+        "link": "https://www.youtube.com/watch?v=CrR623MDBM0",
+        "title": "Павел Щербинин — о Сбермаркете, Mail.ru и Практикуме"
+    },
+    "128": {
+        "link": "https://www.youtube.com/watch?v=GQP5fe5fXbs",
+        "title": "Какие переменные есть в Python?"
+    },
+    "129": {
+        "link": "https://www.youtube.com/watch?v=LhmU-oPFxj4",
+        "title": "Зачем нужен Симулятор ML-инженера? | Валерий Бабушкин | karpov.courses"
+    },
+    "130": {
+        "link": "https://www.youtube.com/watch?v=biJRGBlj_1M",
+        "title": "Вова Мюге — как играть в онлайн-игры и доиграться до руководителя | Подкаст | karpov.courses"
+    },
+    "131": {
+        "link": "https://www.youtube.com/watch?v=Us_TKT8ZL2E",
+        "title": "Junior Data Scientist | Собеседование | karpov.courses"
+    },
+    "132": {
+        "link": "https://www.youtube.com/watch?v=0CBVqWSO1K4",
+        "title": "Из автомеханика в аналитики | Подкаст | karpov.courses"
+    },
+    "133": {
+        "link": "https://www.youtube.com/watch?v=Zki9VMzxcFU",
+        "title": "Как я перестал беспокоиться и полюбил Пуассон-Bootstrap | Вебинар Валерия Бабушкина | karpov.courses"
+    },
+    "134": {
+        "link": "https://www.youtube.com/watch?v=JLu322-Dcow",
+        "title": "О Симуляторе A/B-тестов | Валерий Бабушкин | karpov.courses"
+    },
+    "135": {
+        "link": "https://www.youtube.com/watch?v=hWQDCIIHPQY",
+        "title": "Q&A | Вебинар от команды HARD ML | karpov.courses"
+    },
+    "136": {
+        "link": "https://www.youtube.com/watch?v=xfH2QMdCvWA",
+        "title": "System Design с Валерием Бабушкиным | Выпуск 4 | Собеседование | karpov.courses"
+    },
+    "137": {
+        "link": "https://www.youtube.com/watch?v=DXwjtmk9Zpo",
+        "title": "Михаил Рожков — я сторонник того, чтобы всё автоматизировать | Подкаст | karpov.courses"
+    },
+    "138": {
+        "link": "https://www.youtube.com/watch?v=l23LHX4G5iM",
+        "title": "Как изменились требования к Junior аналитикам данных | karpov.courses"
+    },
+    "139": {
+        "link": "https://www.youtube.com/watch?v=zTGxoO1wSas",
+        "title": "Федя Яковлев — из репетиторов в аналитики через ШАД | Подкаст | karpov.courses"
+    },
+    "140": {
+        "link": "https://www.youtube.com/watch?v=eKArZfPErkQ",
+        "title": "Сергей Колесников – о карьерном пути и Data Science в Тинькофф"
+    },
+    "141": {
+        "link": "https://www.youtube.com/watch?v=NmVfCuSM_0k",
+        "title": "Cron и его альтернативы | Вебинар Дины Сафиной | karpov.courses"
+    },
+    "142": {
+        "link": "https://www.youtube.com/watch?v=I5uSqwo91xA",
+        "title": "JetBrains DataSpell IDE для Data Science | Анатолий Карпов | karpov.courses"
+    },
+    "143": {
+        "link": "https://www.youtube.com/watch?v=-qxn4kTb2zg",
+        "title": "Женя Лебедев — в IT без профильного образования | Подкаст | karpov.courses"
+    },
+    "144": {
+        "link": "https://www.youtube.com/watch?v=W9L1Bb5wG1I",
+        "title": "Юлия Михелёва — о пути во фронтенд через тестирование | Подкаст | karpov.courses"
+    },
+    "145": {
+        "link": "https://www.youtube.com/watch?v=1tVxbVPVG6k",
+        "title": "Валерий Бабушкин: зачем и куда ушёл из Facebook? | Интервью | karpov.courses"
+    },
+    "146": {
+        "link": "https://www.youtube.com/watch?v=xfKui8OR2dc",
+        "title": "Categorical Variable Encoding и построение моделей второго уровня | Вебинар | karpov.courses"
+    },
+    "147": {
+        "link": "https://www.youtube.com/watch?v=wKrsanSXzk0",
+        "title": "Exploratory data analysis в Pandas | Вебинар Лаврентия Данилова | karpov.courses"
+    },
+    "148": {
+        "link": "https://www.youtube.com/watch?v=9RVKtz86Jw0",
+        "title": "Спорим о Hadoop: пора ли прощаться с любимым инструментом?"
+    },
+    "149": {
+        "link": "https://www.youtube.com/watch?v=c8jI0c66fuo",
+        "title": "Лёша Синельников — как долго искать себя и найти в CPA-трафике | Подкаст | karpov.courses"
+    },
+    "150": {
+        "link": "https://www.youtube.com/watch?v=WpgRkRELP5I",
+        "title": "Применение ML-моделей в потоковой обработке данных | karpov.courses"
+    },
+    "151": {
+        "link": "https://www.youtube.com/watch?v=3LsBhdb-PI4",
+        "title": "Ваня Нетреба — о работе в IT после учёбы на геодезиста | Подкаст | karpov.courses"
+    },
+    "152": {
+        "link": "https://www.youtube.com/watch?v=6d2xcN5Yy48",
+        "title": "Матрицы и векторы"
+    },
+    "153": {
+        "link": "https://www.youtube.com/watch?v=64yoZSMEhoY",
+        "title": "Поведенческое интервью | Behavioral Interview | Выпуск 2 | Валерий Бабушкин | karpov.courses"
+    },
+    "154": {
+        "link": "https://www.youtube.com/watch?v=Wngo-VHAF94",
+        "title": "Дмитрий Охременко — из следователей в аналитики | Подкаст | karpov.courses"
+    },
+    "155": {
+        "link": "https://www.youtube.com/watch?v=qL1nxnEL0gE",
+        "title": "Сергей Бережной — от html-вёрстки до управления разработкой в Яндексе | Подкаст | karpov.courses"
+    },
+    "156": {
+        "link": "https://www.youtube.com/watch?v=uqJV765l3sI",
+        "title": "Автокорректор ошибок правописания на Python | Вебинар Яна Пиле | karpov.courses"
+    },
+    "157": {
+        "link": "https://www.youtube.com/watch?v=bO2ZiAfnV1I",
+        "title": "Перформанс ревью и калибровка в технологических компаниях | Валерий Бабушкин | karpov.courses"
+    },
+    "158": {
+        "link": "https://www.youtube.com/watch?v=ZK2hIZ8fEro",
+        "title": "Стадии ML-проектов | Вебинар Эмиля Каюмова | karpov.courses"
+    },
+    "159": {
+        "link": "https://www.youtube.com/watch?v=PZoueQ9kjCU",
+        "title": "System Design с Валерием Бабушкиным | Выпуск 1 | Собеседование | karpov.courses"
+    },
+    "160": {
+        "link": "https://www.youtube.com/watch?v=l7Hcgm-q4AI",
+        "title": "Start ML: преподаватели о каждом модуле | karpov.courses"
+    },
+    "161": {
+        "link": "https://www.youtube.com/watch?v=YsR_bWQUDsQ",
+        "title": "Алина Гребёнкина — как сделать так, чтобы разработчики использовали Kotlin | Подкаст |karpov.courses"
+    },
+    "162": {
+        "link": "https://www.youtube.com/watch?v=Up-CFJ47Bgg",
+        "title": "Performance Review in Big Tech | Валерий Бабушкин | karpov.courses"
+    },
+    "163": {
+        "link": "https://www.youtube.com/watch?v=oquId6GPadw",
+        "title": "Что такое продуктовая аналитика  | Вебинар Жанны Азизовой | karpov.courses"
+    },
+    "164": {
+        "link": "https://www.youtube.com/watch?v=RMyi-sazRTw",
+        "title": "Как найти первую работу в Data Science? | Взгляд HR | karpov.courses"
+    },
+    "165": {
+        "link": "https://www.youtube.com/watch?v=DzWY_zceCxk",
+        "title": "System Design с Валерием Бабушкиным | Выпуск 2 | Собеседование | karpov.courses"
+    },
+    "166": {
+        "link": "https://www.youtube.com/watch?v=kJlAXHPz8c0",
+        "title": "Алексей Бабаков — Доверие в EdTech — это очень дорогая валюта | Подкаст | karpov.courses"
+    },
+    "167": {
+        "link": "https://www.youtube.com/watch?v=6hZiRfm85Ug",
+        "title": "Сергей Шаров — Часть моей работы уже проходит в ChatGPT"
+    },
+    "168": {
+        "link": "https://www.youtube.com/watch?v=QH44jyu3UFI",
+        "title": "Применение массивов для решения прикладной задачи в ClickHouse | Мария Сомова | karpov.courses"
+    },
+    "169": {
+        "link": "https://www.youtube.com/watch?v=swhkJy6bBto",
+        "title": "Игровой аналитик | Собеседование | karpov.courses"
+    },
+    "170": {
+        "link": "https://www.youtube.com/watch?v=G9d2likA-_E",
+        "title": "Что такое градиентный бустинг? | Григорий Будорагин | karpov.courses"
+    },
+    "171": {
+        "link": "https://www.youtube.com/watch?v=Fj4zBcRl-5I",
+        "title": "Бланка Шупе — как уйти из маркетинга в IT и открыть свой коворкинг | Подкаст | karpov.courses"
+    },
+    "172": {
+        "link": "https://www.youtube.com/watch?v=Be5vKJZD9_I",
+        "title": "Роман Кумар Виас о Digital Marketing  | Интервью | karpov.courses"
+    },
+    "173": {
+        "link": "https://www.youtube.com/watch?v=xevyY1rS3qU",
+        "title": "Q&A | Вебинар команды System Design | karpov.courses"
+    },
+    "174": {
+        "link": "https://www.youtube.com/watch?v=CKa3jeaMfkk",
+        "title": "Гена Евстратов — начать программировать, чтобы написать свою игру | Подкаст | karpov.courses"
+    },
+    "175": {
+        "link": "https://www.youtube.com/watch?v=e3s85Zcv0K0",
+        "title": "Иван Волков — о самообучении в IT и работе тимлидом | Подкаст | karpov.courses"
+    },
+    "176": {
+        "link": "https://www.youtube.com/watch?v=ybvZh8sBMXM",
+        "title": "Максим Годзи – о различиях между аналитиками в России и США"
+    },
+    "177": {
+        "link": "https://www.youtube.com/watch?v=IwJgivQPG-o",
+        "title": "Команда курса по ML – подробно о каждом модуле"
+    },
+    "178": {
+        "link": "https://www.youtube.com/watch?v=d19P4zOI_U8",
+        "title": "Михаил Серёгин – ЭЭГ, нейромаркетинг и Яндекс | Подкаст | karpov.courses"
+    },
+    "179": {
+        "link": "https://www.youtube.com/watch?v=rJZVxWREJuU",
+        "title": "Саша Дончук — от электромобилей к компьютерному зрению для поездов | Подкаст | karpov.courses"
+    },
+    "180": {
+        "link": "https://www.youtube.com/watch?v=-BjX0S1M7m0",
+        "title": "Особенности трудоустройства в США | Вебинар | karpov.courses"
+    },
+    "181": {
+        "link": "https://www.youtube.com/watch?v=54rqEzgWsgE",
+        "title": "Middle Data Scientist | Выпуск 1. Секция ML | Собеседование | karpov.courses"
+    },
+    "182": {
+        "link": "https://www.youtube.com/watch?v=4EqriO-2aZM",
+        "title": "Сравнение подходов ETL и ELT | Дина Сафина | karpov.courses"
+    },
+    "183": {
+        "link": "https://www.youtube.com/watch?v=y8A4eN0gt4c",
+        "title": "Иван Бушмаринов — Из языковой школы в химлабораторию и Аналитику Яндекса | Подкаст | karpov.courses"
+    },
+    "184": {
+        "link": "https://www.youtube.com/watch?v=nDOj9HH9IZw",
+        "title": "Зачем бизнесу аналитики? | Вебинар Михаила Серёгина | karpov.courses"
+    },
+    "185": {
+        "link": "https://www.youtube.com/watch?v=apRK-HDcn5M",
+        "title": "Сергей Панюшкин — от увлечения iOS к управлению ростом | Подкаст | karpov.courses"
+    },
+    "186": {
+        "link": "https://www.youtube.com/watch?v=6wGqWxFtnho",
+        "title": "Data Science в России | Голосовой чат | karpov.courses"
+    },
+    "187": {
+        "link": "https://www.youtube.com/watch?v=v-V1pCbVEKg",
+        "title": "Саша Гребенюк - от ростовой куклы слона до проджекта в Яндексе | Подкаст | karpov courses"
+    },
+    "188": {
+        "link": "https://www.youtube.com/watch?v=vaFTwxjdLGQ",
+        "title": "Применение анализа выживаемости для оценки оттока клиентов | Лаврентий Данилов | karpov.courses"
+    },
+    "189": {
+        "link": "https://www.youtube.com/watch?v=J4NS0IfEk7c",
+        "title": "Максим Приходский — проработать десять лет в одной компании и не выгореть | Подкаст | karpov.courses"
+    },
+    "190": {
+        "link": "https://www.youtube.com/watch?v=_ou0APbUd24",
+        "title": "Ирина Чернега — работа в саппорте это работа с людьми | Подкаст | karpov.courses"
+    },
+    "191": {
+        "link": "https://www.youtube.com/watch?v=scVy8kUG4xM",
+        "title": "Отзыв о курсе «Инженер данных» | karpov.courses"
+    },
+    "192": {
+        "link": "https://www.youtube.com/watch?v=zIkrPzCLXFA",
+        "title": "«Инженер данных»: преподаватели о курсе | karpov.courses"
+    },
+    "193": {
+        "link": "https://www.youtube.com/watch?v=yssTPjrPsxs",
+        "title": "Построение пути до файла в Pandas | karpov.courses"
+    },
+    "194": {
+        "link": "https://www.youtube.com/watch?v=facQgiPlQeM",
+        "title": "Поведенческое интервью | Behavioral Interview | Выпуск 1 | Валерий Бабушкин | karpov.courses"
+    },
+    "195": {
+        "link": "https://www.youtube.com/watch?v=RSsBpWwnE1o",
+        "title": "Старт карьеры в аналитике | Взгляд HR | karpov.courses"
+    },
+    "196": {
+        "link": "https://www.youtube.com/watch?v=gPD7Okf8rIQ",
+        "title": "Женя Цаплин – Data Science как бизнес | Подкаст | karpov.courses"
+    },
+    "197": {
+        "link": "https://www.youtube.com/watch?v=GfuvKLLFvQo",
+        "title": "Ира Александрова – из онлайн-казино в руководители аналитики | Подкаст | karpov.courses"
+    },
+    "198": {
+        "link": "https://www.youtube.com/watch?v=QihLoQGf2V4",
+        "title": "Аделина Басырова — Лучший менеджер тот, у которого всё работает без него | Подкаст | karpov.courses"
+    },
+    "199": {
+        "link": "https://www.youtube.com/watch?v=yzpGAEgW8Q4",
+        "title": "Почему идеальный английский не обязателен для работы в зарубежной компании | karpov.courses"
+    }
+}

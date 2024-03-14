@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from dataclasses import dataclass
 from typing import List
 import httpx
@@ -9,8 +10,9 @@ from llama_index.node_parser import SimpleNodeParser
 from llama_index import StorageContext, load_index_from_storage
 from llama_index import VectorStoreIndex, ServiceContext
 from data_pipelines.parser_transcribe import ParserTranscribe, get_video_urls
-from custom_embedding import OpenAIEmbeddingProxy
+from app.custom_embedding import OpenAIEmbeddingProxy
 
+logging.basicConfig(level=logging.INFO)
 load_dotenv()
 PROXY = os.getenv("PROXY")
 http_client = httpx.Client(proxies=PROXY)
@@ -55,7 +57,8 @@ class IndexPipeline:
         """
         transcriber = ParserTranscribe(self.path_to_save, self.json_video_info_path)
         for i, url in enumerate(new_videos):
-            print(f"Transcribe {i} video")
+            # print(f"Transcribe {i} video")
+            logging.info("Transcribe %s video", i)
             transcriber.get_transcribe_video(url)
 
     def _get_index(self, new_videos: List[str]) -> None:
@@ -104,7 +107,8 @@ class IndexPipeline:
 
         # Добавляем документы в индекс
         for i, doc in enumerate(documents):
-            print(f"Add {i} video to index")
+            # print(f"Add {i} video to index")
+            logging.info("Add %s video to index", i)
             index.insert(doc)
 
         # Сохраняем индекс
@@ -120,7 +124,8 @@ class IndexPipeline:
             self._transcribe_videos(new_videos)
             self._get_index(new_videos)
         else:
-            print("No new videos to download")
+            # print("No new videos to download")
+            logging.info("No new videos to download")
 
 if __name__ == "__main__":
     pipe = IndexPipeline(

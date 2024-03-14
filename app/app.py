@@ -2,6 +2,8 @@ import os
 import logging
 import asyncio
 import re
+import pickle
+import json
 import httpx
 from aiogram import Bot, Dispatcher, types, executor
 import openai
@@ -9,6 +11,7 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from llama_index import StorageContext, load_index_from_storage, ServiceContext
 from custom_embedding import OpenAIEmbeddingProxy
+from utils import predict_with_trained_model
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
@@ -21,7 +24,7 @@ logging.info("Инициализация началась")
 http_client = httpx.AsyncClient(proxies=PROXY)
 embed_model = OpenAIEmbeddingProxy(http_client=http_client)
 service_context = ServiceContext.from_defaults(embed_model=embed_model)
-storage_cntxt = StorageContext.from_defaults(persist_dir="./data/index_storage_1024")
+storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage_1024")
 idx = load_index_from_storage(storage_cntxt,
                               service_context=service_context,
                               )
@@ -31,6 +34,17 @@ query_engine = idx.as_query_engine(
     embedding_mode="hybrid",
     similarity_top_k=3,
 )
+
+retrival_query_regex = re.compile(r"Вопрос: (.*?) \n\n", re.DOTALL)
+message_regex = re.compile(r'@karpovAI_bot[,\s]*')
+
+with open("../data/bm25_result_desc.pkl", 'rb') as bm25result_file:
+    bm25_desc = pickle.load(bm25result_file)
+with open("../data/bm25_result_title.pkl", 'rb') as bm25result_file:
+    bm25_title = pickle.load(bm25result_file)
+with open("../data/links.json", "r", encoding="utf-8") as read_file:
+    links = json.load(read_file)
+
 logging.info("Завершена")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
@@ -81,15 +95,27 @@ async def answer(user_message: str, reply_to_message=None):
             .replace('"', "&quot;")
         )
 
-    regex = re.compile(r"Вопрос: (.*?) \n\n", re.DOTALL)
     if not reply_to_message is None:
         message = f"{reply_to_message}\n\n<b>Вопрос:</b><i>{escape_html(user_message)}<i> \n\n" \
                   f"<b>Ответ:</b>"
-        retrival_query = regex.findall(reply_to_message)[0] + escape_html(user_message)
+        retrival_query = retrival_query_regex.findall(
+            reply_to_message)[0] + escape_html(user_message)
         retrival = await query_engine.aquery(retrival_query)
+        urls_cybertolya = await predict_with_trained_model(
+            retrival_query,
+            bm25_desc,
+            bm25_title,
+            links
+        )
     else:
         message = user_message
         retrival = await query_engine.aquery(message)
+        urls_cybertolya = await predict_with_trained_model(
+            message,
+            bm25_desc,
+            bm25_title,
+            links
+        )
     information = [
         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
     ]
@@ -98,11 +124,18 @@ async def answer(user_message: str, reply_to_message=None):
         logging.info(text)
 
     information_text = escape_html(" ".join([text for text, _, _ in information]))
+    urls_karpovai = set(
+        f'&#x25CF; <a href="{url}">{escape_html(title)}</a>'
+        for _, url, title in information
+    )
+    urls_cybertolya = set(
+        f'&#x25CF; <a href="{url}">{escape_html(title)}</a>'
+        for url, title in urls_cybertolya
+    )
+    logging.info("Urls of KarpovAI: %s\nUrls of CyberTolya: %s", urls_karpovai, urls_cybertolya)
+
     information_url = "\n".join(
-        set(
-            f'&#x25CF; <a href="{url}">{escape_html(title)}</a>'
-            for _, url, title in information
-        )
+        urls_karpovai | urls_cybertolya
     )
 
     context_prompt = (
@@ -128,21 +161,14 @@ async def answer(user_message: str, reply_to_message=None):
     # logging.info(context_response.choices[0]['message']['content'])
 
     evaluate_promt = (
-        "Есть ответы на вопросы некоторых пользователей. Даны только ответы."
-        "Задание: необходимо определить, получилось ли у пользователя ответить на вопрос, "
-        "является ли его ответ уверенным. Если получилось ответить, ответь YES, если нет -"
-        "NO"
+        "Ниже представлена контекстная информация:\n"
+        "---------------------\n"
+        f"{information_text}"
         "\n---------------------\n"
-        "MESSAGE #1: Да, результаты действий, выполненных в Jupyter Notebook, "
-        "можно подключить к даталенсу.\n"
-        "YOUR ANSWER TO MESSAGE #1: YES\n"
-        "MESSAGE #2: Из предоставленной контекстной информации нельзя однозначно определить, "
-        "рассматривается ли тема с временными рядами в курсах корпорации Karpov inc..\n"
-        "YOUR ANSWER TO MESSAGE #2: NO\n"
-        "MESSAGE #3: Извините, я не могу ответить на этот вопрос без дополнительной информации. \n"
-        "YOUR ANSWER TO MESSAGE #3: NO\n"
-        f"MESSAGE #4: {context_response.choices[0].message.content}\n"
-        f"YOUR ANSWER TO MESSAGE #4:"
+        f"Также представлен некий вопрос: {message}\n"
+        "\n---------------------\n"
+        "Присутствуют ли в контекстной информации в точности конкретные термины, понятия, "
+        "определения, имена из вопроса? Если да, ответь YES, если нет - NO"
     )
     evaluate_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": evaluate_promt}]
@@ -191,7 +217,7 @@ async def handle_tag(message: types.Message):
     logging.info("Сообщение принято")
     typing_task = asyncio.create_task(keep_typing(message.chat.id))
     try:
-        user_message = message.text.replace("@karpovAI_bot", "").strip()
+        user_message = message_regex.sub('', message.text)
         try:
             template_answer = await answer(user_message)
         except openai.APITimeoutError:

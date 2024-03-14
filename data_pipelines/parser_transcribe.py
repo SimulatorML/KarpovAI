@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 import subprocess
 import time
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ from openai import OpenAI
 from pytube import Channel
 from pytube import YouTube
 
+logging.basicConfig(level=logging.INFO)
 load_dotenv()
 PROXY = os.getenv("PROXY")
 http_client = httpx.Client(proxies=PROXY)
@@ -54,7 +56,8 @@ class ParserTranscribe:
         audio_name = yt.video_id + ".mp4"
         audio_path = os.path.join(self.path_to_save, audio_name)
         title = yt.title
-        print(f"Downloading {title}...")
+        # print(f"Downloading {title}...")
+        logging.info("Downloading %s...", title)
         # The next string 'yt.streams...' must be before the following.
         # Surprisingly, but the fact is, if this is not observed,
         # then it is impossible to get a description.
@@ -79,7 +82,8 @@ class ParserTranscribe:
         else:
             video_info = []
         url_info = self._get_video_info(url_of_video)
-        print(f"Path to mp4 file: {url_info['audio_path']}\n")
+        # print(f"Path to mp4 file: {url_info['audio_path']}\n")
+        logging.info("Path to mp4 file: %s\n", url_info['audio_path'])
 
         video_info_item = {"url": [], "title": [], "description": [], "audio_path": [], "text": []}
         for key, value in url_info.items():
@@ -195,7 +199,8 @@ class ParserTranscribe:
                 ]
             )
             for i, segment_file in enumerate(segment_files):
-                print(f"Transcribe {i} segment")
+                # print(f"Transcribe {i} segment")
+                logging.info("Transcribe %s segment", i)
                 if segment_file.startswith(file_name[:-4] + "_segment"):
                     segment_path = os.path.join(self.path_to_save, segment_file)
                     transcriptions.append(self._transcribe_with_whisper(segment_path))
@@ -205,7 +210,8 @@ class ParserTranscribe:
             os.remove(audio_path) # Удаляем исходный файл
 
             # Сохраняем все транскрибации в один текстовый файл
-            print(transcriptions)
+            # print(transcriptions)
+            logging.info(transcriptions)
             with open(self.json_video_info_path, "r", encoding="utf-8") as f:
                 data_list = json.load(f)
 
