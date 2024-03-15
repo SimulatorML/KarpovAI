@@ -28,15 +28,15 @@ BOT_ID = int(os.getenv("BOT_ID"))
 PROXY = os.getenv("PROXY")
 
 # Инициализация вашей системы
-logging.info("Инициализация началась")
+logging.info("Initialization has started")
 http_client = httpx.AsyncClient(proxies=PROXY)
 embed_model = OpenAIEmbeddingProxy(http_client=http_client)
 service_context = ServiceContext.from_defaults(embed_model=embed_model)
 storage_cntxt = StorageContext.from_defaults(persist_dir="../data/index_storage_1024")
-idx = load_index_from_storage(storage_cntxt,
+index = load_index_from_storage(storage_cntxt,
                               service_context=service_context,
                               )
-query_engine = idx.as_query_engine(
+query_engine = index.as_query_engine(
     include_text=True,
     response_mode="no_text",
     embedding_mode="hybrid",
@@ -53,7 +53,7 @@ with open("../data/bm25_result_title.pkl", 'rb') as bm25result_file:
 with open("../data/links.json", "r", encoding="utf-8") as read_file:
     links = json.load(read_file)
 
-logging.info("Завершена")
+logging.info("Initialization is complete")
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 client = AsyncOpenAI(
@@ -128,8 +128,8 @@ async def answer(user_message: str, reply_to_message=None):
         (i.text, i.metadata["url"], i.metadata["title"]) for i in retrival.source_nodes
     ]
 
-    for text in [text for text, _, _ in information]:
-        logging.info(text)
+    for idx, text in enumerate([text for text, _, _ in information], 1):
+        logging.info("%s node: %s", idx, text)
 
     information_text = escape_html(" ".join([text for text, _, _ in information]))
     urls_karpovai = set(
@@ -159,14 +159,7 @@ async def answer(user_message: str, reply_to_message=None):
         "Пользователь не знает о ее наличии!"
     )
 
-    logging.info("Сообщение сформировано и отправлено в OpenAI")
     model_name = "gpt-3.5-turbo-1106"
-
-    context_response = await client.chat.completions.create(
-        model=model_name, temperature=0, messages=[{"role": "user", "content": context_prompt}]
-    )
-    logging.info(context_response.choices[0].message.content)
-    # logging.info(context_response.choices[0]['message']['content'])
 
     evaluate_promt = (
         "Ниже представлена контекстная информация:\n"
@@ -181,14 +174,19 @@ async def answer(user_message: str, reply_to_message=None):
     evaluate_response = await client.chat.completions.create(
         model=model_name, temperature=0, messages=[{"role": "user", "content": evaluate_promt}]
     )
-    logging.info(evaluate_response.choices[0].message.content)
+    logging.info("Context is valid: %s", evaluate_response.choices[0].message.content)
 
     dont_match_start_phrase = "К сожалению, я не могу ответить на этот вопрос, " \
                               "основываясь на роликах с YouTube-канала Karpov.Courses, " \
                               "но могу сам ответить на него.\n"
 
     if evaluate_response.choices[0].message.content.strip() == "YES":
-        main_response = context_response.choices[0].message.content
+        gpt_response = await client.chat.completions.create(
+            model=model_name,
+            temperature=0,
+            messages=[{"role": "user", "content": context_prompt}]
+        )
+        main_response = gpt_response.choices[0].message.content
         extended_answer = f"<b>Подробнее здесь:</b> \n\n{information_url}"
     else:
         gpt_response = await client.chat.completions.create(
@@ -198,6 +196,8 @@ async def answer(user_message: str, reply_to_message=None):
         )
         main_response = dont_match_start_phrase + gpt_response.choices[0].message.content
         extended_answer = ""
+
+    logging.info("Finally answer: %s", main_response)
 
     template_answer = (
             f"<b>Вопрос:</b> <i>{escape_html(user_message)}</i> \n\n"
@@ -222,7 +222,7 @@ async def handle_tag(message: types.Message):
     """
     KarpovAI bot tag function
     """
-    logging.info("Сообщение принято")
+    logging.info("The message is accepted: %s", message.text)
     typing_task = asyncio.create_task(keep_typing(message.chat.id))
     try:
         user_message = message_regex.sub('', message.text)
@@ -241,7 +241,7 @@ async def handle_reply(message: types.Message):
     """
     KarpovAI bot reply function
     """
-    logging.info("Сообщение принято")
+    logging.info("The message is accepted: %s", message.text)
     typing_task = asyncio.create_task(keep_typing(message.chat.id))
     try:
         original_message = message.reply_to_message.text
